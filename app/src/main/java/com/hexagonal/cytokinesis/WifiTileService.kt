@@ -57,7 +57,7 @@ class WifiTileService() : TileService() {
     // Helper to update the tile to active
     private fun setTileActive(subtitle: String) {
         qsTile.state = Tile.STATE_ACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_wifi_4_bar_24)
+        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.wifi_strength_4)
         qsTile.subtitle = subtitle
 
         qsTile.updateTile()
@@ -66,7 +66,7 @@ class WifiTileService() : TileService() {
     // Helper to update the tile to inactive
     private fun setTileInactive() {
         qsTile.state = Tile.STATE_INACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_wifi_off_24)
+        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.wifi_strength_off_outline)
         qsTile.subtitle = "Disconnected"
 
         qsTile.updateTile()

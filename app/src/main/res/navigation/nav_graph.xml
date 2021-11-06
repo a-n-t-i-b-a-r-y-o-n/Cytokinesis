@@ -3,26 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/SettingsFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.hexagonal.cytokinesis.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
+        android:id="@+id/SettingsFragment"
+        android:name="com.hexagonal.cytokinesis.SettingsFragment"
+        android:label="@string/settings_fragment_label"
+        tools:layout="@xml/root_preferences.xml">
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_SettingsFragment_to_AboutFragment"
+            app:destination="@id/AboutFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.hexagonal.cytokinesis.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/AboutFragment"
+        android:name="com.hexagonal.cytokinesis.AboutFragment"
+        android:label="@string/about_fragment_label"
+        tools:layout="@layout/fragment_about">
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_AboutFragment_to_SettingsFragment"
+            app:destination="@id/SettingsFragment" />
     </fragment>
 </navigation>

@@ -1,21 +1,55 @@
 <resources>
-    <!-- App name -->
+    <!-- General strings -->
     <string name="app_name">Cytokinesis</string>
+    <string name="go_back">Back</string>
 
     <!-- WiFi tile strings -->
     <string name="wifi_tile_label">WiFi</string>
 
     <!-- Data tile strings -->
     <string name="data_tile_label">Mobile Data</string>
+    
+    <!-- About fragment -->
+    <string name="about_fragment_label">About Cytokinesis</string>
+    <string name="about_body_text">
+        This humble app provides two QuickSettings toggles resembling the "WiFi" and "Mobile Data" QuickSettings tiles removed after Android 11.
+        <br /><br />
+        Source code is licensed under GPLv3:<br />
+        <a href="https://github.com/g-r-a-v-i-t-y-w-a-v-e/Cytokinesis.git">https://github.com/g-r-a-v-i-t-y-w-a-v-e/Cytokinesis.git</a>
+        <br /><br />
+        Icons from <a href="https://fonts.google.com/icons">Material Icons</a> &amp; <a href="https://materialdesignicons.com">Material Design Icons</a>.
+    </string>
+    <string name="about_signature_text">
+        Made with ☕ somewhere in Texas<br />
+        g-r-a-v-i-t-y-w-a-v-e
+    </string>
+
+    <!-- Settings fragment -->
+    <string name="settings_fragment_label">Cytokinesis Settings</string>
+    <string name="icon_type_label">Icon Type</string>
+    <string name="subheading_label">Subheading</string>
+    <!-- Wifi tile settings -->
+    <string name="wifi_title_label">WiFi Tile</string>
+    <!-- Data tile settings -->
+    <string name="data_title_label">Mobile Data Tile</string>
+    <!-- Permissions -->
+    <string name="access_network_state">Access Network State</string>
+    <string name="change_network_state">Change Network State</string>
+    <string name="read_phone_state">Read Phone State</string>
+    <string name="access_wifi_state">Access WiFi State</string>
+    <string name="change_wifi_state">Change WiFi State</string>
+    <string name="internet">Internet</string>
 
 
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

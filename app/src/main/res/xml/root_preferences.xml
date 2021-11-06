@@ -1,0 +1,74 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/wifi_title_label">
+        <ListPreference
+            app:defaultValue="ipv4"
+            app:entries="@array/wifi_subheading_entries"
+            app:entryValues="@array/wifi_subheading_values"
+            app:key="ipv4"
+            app:title="@string/subheading_label"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/data_title_label">
+        <ListPreference
+            app:defaultValue="signal_strength"
+            app:entries="@array/data_icon_type_entries"
+            app:entryValues="@array/data_icon_type_values"
+            app:key="network_type"
+            app:title="@string/icon_type_label"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="network_type"
+            app:entries="@array/data_subheading_entries"
+            app:entryValues="@array/data_subheading_values"
+            app:key="network_type"
+            app:title="@string/subheading_label"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Permissions">
+        <SwitchPreferenceCompat
+            app:key="permission_accessnetworkstate"
+            app:title="@string/access_network_state" />
+        <SwitchPreferenceCompat
+            app:key="permission_changenetworkstate"
+            app:title="@string/change_network_state" />
+        <SwitchPreferenceCompat
+            app:key="permission_readphonestate"
+            app:title="@string/read_phone_state" />
+        <SwitchPreferenceCompat
+            app:key="permission_accesswifistate"
+            app:title="@string/access_wifi_state" />
+        <SwitchPreferenceCompat
+            app:key="permission_changewifistate"
+            app:title="@string/change_wifi_state" />
+        <SwitchPreferenceCompat
+            app:key="permission_internet"
+            app:title="@string/internet" />
+    </PreferenceCategory>
+
+    <!--
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
+    </PreferenceCategory>
+    -->
+
+
+</PreferenceScreen>

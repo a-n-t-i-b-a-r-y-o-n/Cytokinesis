@@ -58,7 +58,7 @@ class DataTileService() : TileService() {
     // Helper to update the tile to active
     private fun setTileActive(subtitle: String) {
         qsTile.state = Tile.STATE_ACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_cellular_4_bar_24)
+        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_4)
         qsTile.subtitle = subtitle
 
         qsTile.updateTile()
@@ -67,7 +67,7 @@ class DataTileService() : TileService() {
     // Helper to update the tile to inactive
     private fun setTileInactive() {
         qsTile.state = Tile.STATE_INACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_cellular_off_24)
+        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_mobiledata_off_24)
         qsTile.subtitle = "Disconnected"
 
         qsTile.updateTile()
