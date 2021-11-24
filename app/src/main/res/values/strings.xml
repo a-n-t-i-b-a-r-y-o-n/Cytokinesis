@@ -33,6 +33,9 @@
     <!-- Data tile settings -->
     <string name="data_title_label">Mobile Data Tile</string>
     <!-- Permissions -->
+    <string name="heading_permissions">Permissions</string>
+    <string name="permission_not_granted">Permission not granted</string>
+    <string name="permission_granted">Permission granted</string>
     <string name="access_network_state">Access Network State</string>
     <string name="change_network_state">Change Network State</string>
     <string name="read_phone_state">Read Phone State</string>

@@ -2,50 +2,62 @@
 
     <PreferenceCategory app:title="@string/wifi_title_label">
         <ListPreference
+            app:key="wifi_subheading"
             app:defaultValue="ipv4"
             app:entries="@array/wifi_subheading_entries"
             app:entryValues="@array/wifi_subheading_values"
-            app:key="ipv4"
             app:title="@string/subheading_label"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/data_title_label">
         <ListPreference
+            app:key="data_icon_type"
             app:defaultValue="signal_strength"
             app:entries="@array/data_icon_type_entries"
             app:entryValues="@array/data_icon_type_values"
-            app:key="network_type"
             app:title="@string/icon_type_label"
             app:useSimpleSummaryProvider="true" />
         <ListPreference
+            app:key="data_subheading"
             app:defaultValue="network_type"
             app:entries="@array/data_subheading_entries"
             app:entryValues="@array/data_subheading_values"
-            app:key="network_type"
             app:title="@string/subheading_label"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Permissions">
+    <PreferenceCategory app:title="@string/heading_permissions">
         <SwitchPreferenceCompat
             app:key="permission_accessnetworkstate"
-            app:title="@string/access_network_state" />
+            app:title="@string/access_network_state"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
         <SwitchPreferenceCompat
             app:key="permission_changenetworkstate"
-            app:title="@string/change_network_state" />
+            app:title="@string/change_network_state"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
         <SwitchPreferenceCompat
             app:key="permission_readphonestate"
-            app:title="@string/read_phone_state" />
+            app:title="@string/read_phone_state"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
         <SwitchPreferenceCompat
             app:key="permission_accesswifistate"
-            app:title="@string/access_wifi_state" />
+            app:title="@string/access_wifi_state"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
         <SwitchPreferenceCompat
             app:key="permission_changewifistate"
-            app:title="@string/change_wifi_state" />
+            app:title="@string/change_wifi_state"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
         <SwitchPreferenceCompat
             app:key="permission_internet"
-            app:title="@string/internet" />
+            app:title="@string/internet"
+            app:summaryOff="@string/permission_not_granted"
+            app:summaryOn="@string/permission_granted" />
     </PreferenceCategory>
 
     <!--
