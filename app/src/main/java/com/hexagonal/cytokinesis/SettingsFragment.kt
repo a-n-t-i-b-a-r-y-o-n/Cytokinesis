@@ -25,7 +25,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-
+        // Handle permissions switches and About button
         if (preference != null) {
             if (preference.key == "about") {
                 // Navigate to AboutFragment
@@ -46,19 +46,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // WiFi subheading
-        findPreference<ListPreference>("wifi_subheading")
-            ?.setOnPreferenceChangeListener { p, v -> onWifiSubheadChange(p, v) }
-
-        // Mobile data icon type
-        findPreference<ListPreference>("data_icon_type")
-            ?.setOnPreferenceChangeListener { p, v -> onDataIconTypeChange(p, v) }
-
-        // Mobile data subheading
-        findPreference<ListPreference>("data_subheading")
-            ?.setOnPreferenceChangeListener { p, v -> onDataSubheadChange(p, v) }
-
         // Ensure permissions switches match preference values
         resetPermissionsSwitches()
     }
@@ -83,21 +70,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         super.onRequestPermissionsResult(requestCode, permissionList, grantResults)
-    }
-
-    private fun onWifiSubheadChange(preference: Preference, newValue: Any): Boolean {
-
-        return true
-    }
-
-    private fun onDataIconTypeChange(preference: Preference, newValue: Any): Boolean {
-
-        return true
-    }
-
-    private fun onDataSubheadChange(preference: Preference, newValue: Any): Boolean {
-
-        return true
     }
 
     // Reset all permissions switches

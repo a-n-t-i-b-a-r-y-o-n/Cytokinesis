@@ -4,11 +4,17 @@
         <item>IPv4 Address (Default)</item>
         <item>IPv6 Address</item>
         <item>Link Speed</item>
+        <item>Frequency</item>
+        <item>RSSI</item>
+        <item>Signal Strength</item>
     </string-array>
     <string-array name="wifi_subheading_values">
         <item>ipv4</item>
         <item>ipv6</item>
         <item>speed</item>
+        <item>frequency</item>
+        <item>rssi</item>
+        <item>strength</item>
     </string-array>
 
     <!-- Mobile Data Tile Icon types -->
