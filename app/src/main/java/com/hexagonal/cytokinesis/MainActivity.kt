@@ -32,26 +32,6 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        /*
-
-        // TODO: Handle permissions more... elegantly?
-        val permissions = arrayOf(
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.CHANGE_NETWORK_STATE,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.CHANGE_WIFI_STATE,
-            Manifest.permission.INTERNET,
-        )
-
-        for (p in permissions) {
-            if (ActivityCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf<String>(p), 0)
-                return
-            }
-        }
-
-         */
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -13,14 +13,14 @@
     <string name="about_fragment_label">About Cytokinesis</string>
     <string name="about_body_text">
         This humble app provides two QuickSettings toggles resembling the "WiFi" and "Mobile Data" QuickSettings tiles removed after Android 11.
-        <br /><br />
-        Source code is licensed under GPLv3:<br />
+        "\n\n"<br/><br/>
+        Source code is licensed under GPLv3:"\n"<br/>
         <a href="https://github.com/g-r-a-v-i-t-y-w-a-v-e/Cytokinesis.git">https://github.com/g-r-a-v-i-t-y-w-a-v-e/Cytokinesis.git</a>
-        <br /><br />
+        "\n\n"<br/><br/>
         Icons from <a href="https://fonts.google.com/icons">Material Icons</a> &amp; <a href="https://materialdesignicons.com">Material Design Icons</a>.
     </string>
     <string name="about_signature_text">
-        Made with ☕ somewhere in Texas<br />
+        Made with ☕ somewhere in Texas"\n\n"<br/><br/>
         g-r-a-v-i-t-y-w-a-v-e
     </string>
 

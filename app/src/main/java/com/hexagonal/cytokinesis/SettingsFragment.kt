@@ -5,10 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
+import androidx.navigation.fragment.findNavController
+import androidx.preference.*
 import com.google.android.material.snackbar.Snackbar
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -27,14 +25,27 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        Log.d("Preference", "Preference tree clicked")
+
+        if (preference != null) {
+            if (preference.key == "about") {
+                // Navigate to AboutFragment
+                findNavController().navigate(R.id.action_SettingsFragment_to_AboutFragment)
+            }
+            else if (preference.key.startsWith("permission")) {
+                // Get current preference state
+                val state = (preference as TwoStatePreference).isChecked
+                // Identify associated RequestedPermission
+                val permission = RequestedPermission.values().first { p -> p.preferenceKey == preference.key }
+                // Request/drop permission and invert state
+                onPermissionSwitchChanged(state, permission)
+            }
+        }
 
         return super.onPreferenceTreeClick(preference)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         // WiFi subheading
         findPreference<ListPreference>("wifi_subheading")
@@ -48,19 +59,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference<ListPreference>("data_subheading")
             ?.setOnPreferenceChangeListener { p, v -> onDataSubheadChange(p, v) }
 
-        // Permissions switches
-        for (permission in RequestedPermission.values()) {
+        // Ensure permissions switches match preference values
+        resetPermissionsSwitches()
+    }
 
-            // Get corresponding preference for this item
-            val switchPreference = findPreference<SwitchPreferenceCompat>(permission.preferenceKey)!!
+    override fun onResume() {
+        super.onResume()
+        // Reset permissions switches in case we came back from ignored permission request
+        resetPermissionsSwitches()
+    }
 
-            // Update preference with current permission status (it can be changed by the system)
-            switchPreference.isChecked = activity?.checkSelfPermission(permission.permissionString) == PackageManager.PERMISSION_GRANTED
+    override fun onRequestPermissionsResult(requestCode: Int, permissionList: Array<out String>, grantResults: IntArray) {
+        // Handle multiple permissions, even though we only request them one at a time
+        for (i in 0..permissionList.size) {
+            // Identify preference key associated with the permission
+            val key = RequestedPermission.values()
+                .first { p -> p.permissionString == permissionList[i] }
+                .preferenceKey
 
-            // Switch flip listener
-            switchPreference.setOnPreferenceChangeListener { _, v -> onPermissionSwitchChanged(v, permission) }
+            // Update the user preference, which will also update the UI
+            findPreference<TwoStatePreference>(key)
+                ?.isChecked = grantResults[i] == PackageManager.PERMISSION_GRANTED
         }
 
+        super.onRequestPermissionsResult(requestCode, permissionList, grantResults)
     }
 
     private fun onWifiSubheadChange(preference: Preference, newValue: Any): Boolean {
@@ -78,26 +100,39 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return true
     }
 
-    private fun onPermissionSwitchChanged(value: Any, permission: RequestedPermission): Boolean {
-        if (value is Boolean) {
-            when (value) {
-                true -> {
-                    // Need to request this permission
+    // Reset all permissions switches
+    private fun resetPermissionsSwitches() {
+        for (permission in RequestedPermission.values()) {
 
-                    if (activity?.checkSelfPermission(permission.permissionString) != PackageManager.PERMISSION_GRANTED) {
-                        // Request the permission from the user
-                        activity?.requestPermissions(arrayOf(permission.permissionString), 0)
-                    }
-                }
-                false -> {
-                    // TODO: Can you drop permissions?
-                    Snackbar.make(requireView(), "\"${permission.permissionString}\" is already granted.", Snackbar.LENGTH_SHORT)
-                        .show()
+            // Get corresponding preference for this item
+            val switchPreference = findPreference<SwitchPreferenceCompat>(permission.preferenceKey)!!
+
+            // Update preference with current permission status (it can be changed by the system)
+            switchPreference.isChecked = activity?.checkSelfPermission(permission.permissionString) == PackageManager.PERMISSION_GRANTED
+
+            // Switch flip listener
+            switchPreference.setOnPreferenceChangeListener { _, _ -> true }
+        }
+    }
+
+    // Switch flip handler
+    private fun onPermissionSwitchChanged(value: Boolean, permission: RequestedPermission) {
+        when (value) {
+            true -> {
+                // Need to request this permission
+
+                if (activity?.checkSelfPermission(permission.permissionString) != PackageManager.PERMISSION_GRANTED) {
+                    // Request the permission from the user
+                    activity?.requestPermissions(arrayOf(permission.permissionString), 0)
                 }
             }
+            false -> {
+                // Need to drop this permission
 
-            return true
+                // TODO: Can you drop permissions?
+                Snackbar.make(requireView(), "Drop \"${permission.permissionString}\".", Snackbar.LENGTH_SHORT)
+                    .show()
+            }
         }
-        return false
     }
 }
