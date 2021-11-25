@@ -1,21 +1,25 @@
 package com.hexagonal.cytokinesis
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import com.google.android.material.snackbar.Snackbar
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
-    enum class RequestedPermissions(val pref_key: String) {
-        AccessNetworkState("permission_accessnetworkstate"),
-        ChangeNetworkState("permission_changenetworkstate"),
-        ReadPhoneState("permission_readphonestate"),
-        AccessWifiState("permission_accesswifistate"),
-        ChangeWifiState("permission_changewifistate"),
-        Internet("permission_internet"),
+    enum class RequestedPermission(val preferenceKey: String, val permissionString: String) {
+        AccessNetworkState("permission_accessnetworkstate", Manifest.permission.ACCESS_NETWORK_STATE),
+        ChangeNetworkState("permission_changenetworkstate", Manifest.permission.CHANGE_NETWORK_STATE),
+        ReadPhoneState("permission_readphonestate", Manifest.permission.READ_PHONE_STATE),
+        AccessWifiState("permission_accesswifistate", Manifest.permission.ACCESS_WIFI_STATE),
+        ChangeWifiState("permission_changewifistate", Manifest.permission.CHANGE_WIFI_STATE),
+        Internet("permission_internet", Manifest.permission.INTERNET),
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -45,42 +49,55 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.setOnPreferenceChangeListener { p, v -> onDataSubheadChange(p, v) }
 
         // Permissions switches
-        for (permission in RequestedPermissions.values()) {
-            findPreference<ListPreference>(permission.pref_key)
-                ?.setOnPreferenceChangeListener { p, v -> onPermissionChanged(p, v) }
+        for (permission in RequestedPermission.values()) {
+
+            // Get corresponding preference for this item
+            val switchPreference = findPreference<SwitchPreferenceCompat>(permission.preferenceKey)!!
+
+            // Update preference with current permission status (it can be changed by the system)
+            switchPreference.isChecked = activity?.checkSelfPermission(permission.permissionString) == PackageManager.PERMISSION_GRANTED
+
+            // Switch flip listener
+            switchPreference.setOnPreferenceChangeListener { _, v -> onPermissionSwitchChanged(v, permission) }
         }
 
     }
 
-    fun onWifiSubheadChange(preference: Preference, newValue: Any): Boolean {
+    private fun onWifiSubheadChange(preference: Preference, newValue: Any): Boolean {
 
         return true
     }
 
-    fun onDataIconTypeChange(preference: Preference, newValue: Any): Boolean {
+    private fun onDataIconTypeChange(preference: Preference, newValue: Any): Boolean {
 
         return true
     }
 
-    fun onDataSubheadChange(preference: Preference, newValue: Any): Boolean {
+    private fun onDataSubheadChange(preference: Preference, newValue: Any): Boolean {
 
         return true
     }
 
-    fun onPermissionChanged(preference: Preference, newValue: Any): Boolean {
-        // Find matching preference
-        when (RequestedPermissions.values().firstOrNull { p -> p.pref_key == preference.key }) {
-            RequestedPermissions.AccessNetworkState -> TODO()
-            RequestedPermissions.ChangeNetworkState -> TODO()
-            RequestedPermissions.ReadPhoneState -> TODO()
-            RequestedPermissions.AccessWifiState -> TODO()
-            RequestedPermissions.ChangeWifiState -> TODO()
-            RequestedPermissions.Internet -> TODO()
-            null -> {
-                // Somehow flipped a switch for an unknown preference
-                Log.d("Cytokinesis", "onPermissionChanged event for unknown preference: \"${preference.key}\"")
+    private fun onPermissionSwitchChanged(value: Any, permission: RequestedPermission): Boolean {
+        if (value is Boolean) {
+            when (value) {
+                true -> {
+                    // Need to request this permission
+
+                    if (activity?.checkSelfPermission(permission.permissionString) != PackageManager.PERMISSION_GRANTED) {
+                        // Request the permission from the user
+                        activity?.requestPermissions(arrayOf(permission.permissionString), 0)
+                    }
+                }
+                false -> {
+                    // TODO: Can you drop permissions?
+                    Snackbar.make(requireView(), "\"${permission.permissionString}\" is already granted.", Snackbar.LENGTH_SHORT)
+                        .show()
+                }
             }
+
+            return true
         }
-        return true
+        return false
     }
 }

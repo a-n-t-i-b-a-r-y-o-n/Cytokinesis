@@ -10,6 +10,7 @@
         android:name="com.hexagonal.cytokinesis.SettingsFragment"
         android:label="@string/settings_fragment_label"
         tools:layout="@xml/root_preferences.xml">
+        <!-- TODO: The above ^^^ layout declaration is invalid but appears to work -->
         <action
             android:id="@+id/action_SettingsFragment_to_AboutFragment"
             app:destination="@id/AboutFragment" />

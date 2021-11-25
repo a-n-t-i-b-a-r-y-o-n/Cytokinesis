@@ -27,21 +27,19 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
+        // Initialize NavGraph and go to SettingsFragment
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+        /*
 
         // TODO: Handle permissions more... elegantly?
         val permissions = arrayOf(
             Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.CHANGE_NETWORK_STATE,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.ACCESS_WIFI_STATE,
             Manifest.permission.CHANGE_WIFI_STATE,
             Manifest.permission.INTERNET,
         )
@@ -52,6 +50,8 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
+
+         */
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
