@@ -67,9 +67,6 @@ However, if you must open an issue, please include information such as:
     - Use bandwidth? (Current solution; seems buggy, inaccurate)
     - Interwebz answers indicate to use reflection, but that's inherently unstable
 - Properly distinguish between 4G and 4G+ ?
-- Handle click-and-hold events on tiles
-  - Make them do the same as just clicking, basically?
-  - Make them go to network details pages?
 - Find a way to fix the stuttering?
     - Try to actually catch DISCONNECTED events?
     - Seems related to the fact that we _assume_ off state.
