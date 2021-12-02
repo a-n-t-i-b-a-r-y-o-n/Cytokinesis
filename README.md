@@ -46,34 +46,27 @@ I'm just an average guy who serves as an average hero.
 ![Or: "Just a guy who's a hero for fun."](img/saitama_quote.png)
   
 That said, PRs are welcome.  
-However, if you must open an issue, please include:
-- Your device information
+However, if you must open an issue, please include information such as:
+- Your device model
 - Android version
-- Patch level
+- Patch/update level
 - Firmware/ROM type (e.g. GrapheneOS, vanilla AOSP, LineageOS, etc.)
 - Logs/traces if you know where to find them
 - Screenshots if the UI is involved
+- etc.
 
   
 **Enjoy!**
 
 ## Project TODO
-- Indicate Signal strength
-    - Identify for mobile data
-    - Identify for wifi
-    - Update icons to match
-    - Update other part of UI? (label? subtitle?)
+- Finish finding/creating the required icons
+  - Normal "arrows"-type data icon when connected
+  - "IWLAN" ?
 - Properly distinguish between LTE and 5G NSA
     - How does the system do it?
-    - Use bandwidth? (Seems buggy, inaccurate)
+    - Use bandwidth? (Current solution; seems buggy, inaccurate)
     - Interwebz answers indicate to use reflection, but that's inherently unstable
-- Fill out the main activity & fragments
-    - Provide service statuses
-    - Provide config options?
-        - Changing subtitles?
-            - WiFi IPv6 address instead
-            - Network speeds?
-    - Describe the project?
+- Properly distinguish between 4G and 4G+ ?
 - Handle click-and-hold events on tiles
   - Make them do the same as just clicking, basically?
   - Make them go to network details pages?
