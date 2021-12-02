@@ -28,7 +28,11 @@ class DataTileService() : TileService() {
         super.onStartListening()
         // Assume off by default, since we apparently only get callbacks when connected
         if (qsTile != null) {
-            setTileInactive()
+            updateTile(
+                Tile.STATE_INACTIVE,
+                "Disconnected",
+                R.drawable.ic_baseline_mobiledata_off_24,
+            )
         }
         // Register the network callback
         getConnectionManager(applicationContext)
@@ -55,76 +59,39 @@ class DataTileService() : TileService() {
         startActivityAndCollapse(intent)
     }
 
-    // Helper to update the tile to active
-    private fun setTileActive(subtitle: String) {
-        qsTile.state = Tile.STATE_ACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_4)
-        qsTile.subtitle = subtitle
-
-        qsTile.updateTile()
-    }
-
-    // Helper to update the tile to inactive
-    private fun setTileInactive() {
-        qsTile.state = Tile.STATE_INACTIVE
-        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_mobiledata_off_24)
-        qsTile.subtitle = "Disconnected"
-
-        qsTile.updateTile()
-    }
-
-    // TODO: Check permissions!
-    @SuppressLint("MissingPermission")
-    fun onStateChange(state: DataNetworkStates, network: Network?) {
+    // Update all title properties in a uniform way
+    private fun updateTile(state: Int, subhead: String, icon: Int) {
         if (qsTile != null) {
-            enumValues<DataNetworkStates>().forEach { possibleState ->
-                if (possibleState == state) {
-                    if (state == DataNetworkStates.CONNECTED && network != null) {
-                        /*
-                        // DEBUG: Write network data to log
-                        Log.w("[DataTileService]", "Network Capabilities: " + getConnectionManager(applicationContext).getNetworkCapabilities(network)?.toString())
-                        Log.w("[DataTileService]", "Link Properties: " + getConnectionManager(applicationContext).getLinkProperties(network)?.toString())
-                        Log.w("[DataTileService]", "dataNetworkType: " + getTelephonyManager(applicationContext).dataNetworkType)
-                         */
+            // Set properties
+            qsTile.state = state
+            qsTile.subtitle = subhead
+            qsTile.icon = Icon.createWithResource(applicationContext, icon)
+            // Perform UI update
+            qsTile.updateTile()
+        }
+    }
 
-                        // Determine wireless network generation/type
-                        // TODO: Find out how to differentiate between 4G LTE and 5G (both return 'LTE', hover 'NR' for info) - maybe network speed?
-                        val generation = when (getTelephonyManager(applicationContext).dataNetworkType) {
-                            TelephonyManager.NETWORK_TYPE_NR -> "5G"
-                            TelephonyManager.NETWORK_TYPE_LTE -> {
-                                // TODO: I don't think this is accurate, but it seems to work on my device...
-                                val capabilities = getConnectionManager(applicationContext).getNetworkCapabilities(network)
-                                if (capabilities != null && capabilities.linkDownstreamBandwidthKbps > 18000) {
-                                    "5G"
-                                }
-                                else {
-                                    "LTE"
-                                }
-                            }
-                            TelephonyManager.NETWORK_TYPE_EHRPD,
-                            TelephonyManager.NETWORK_TYPE_EVDO_0,
-                            TelephonyManager.NETWORK_TYPE_EVDO_A,
-                            TelephonyManager.NETWORK_TYPE_EVDO_B,
-                            TelephonyManager.NETWORK_TYPE_HSPA,
-                            TelephonyManager.NETWORK_TYPE_HSPAP,
-                            TelephonyManager.NETWORK_TYPE_HSDPA,
-                            TelephonyManager.NETWORK_TYPE_HSUPA,
-                            TelephonyManager.NETWORK_TYPE_TD_SCDMA,
-                            TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
-                            TelephonyManager.NETWORK_TYPE_1xRTT,
-                            TelephonyManager.NETWORK_TYPE_CDMA,
-                            TelephonyManager.NETWORK_TYPE_EDGE,
-                            TelephonyManager.NETWORK_TYPE_GSM,
-                            TelephonyManager.NETWORK_TYPE_GPRS,
-                            TelephonyManager.NETWORK_TYPE_IDEN -> "2G"
-                            TelephonyManager.NETWORK_TYPE_IWLAN -> "IWLAN"
-                            TelephonyManager.NETWORK_TYPE_UNKNOWN -> "Unknown"
-                            else -> "Unknown"
-                        }
-
-                        setTileActive(generation)
-                    }
-                }
+    fun onStateChange(state: DataNetworkStates, network: Network?) {
+        /*
+        // DEBUG: Write network data to log
+        Log.w("[DataTileService]", "Network Capabilities: " + getConnectionManager(applicationContext).getNetworkCapabilities(network)?.toString())
+        Log.w("[DataTileService]", "Link Properties: " + getConnectionManager(applicationContext).getLinkProperties(network)?.toString())
+        Log.w("[DataTileService]", "dataNetworkType: " + getTelephonyManager(applicationContext).dataNetworkType)
+         */
+        if (qsTile != null && network != null) {
+            if (state == DataNetworkStates.CONNECTED) {
+                updateTile(
+                    Tile.STATE_ACTIVE,
+                    network.getDataSubhead(applicationContext!!),
+                    network.getDataIcon(applicationContext!!, true),
+                )
+            }
+            else {
+                updateTile(
+                    Tile.STATE_INACTIVE,
+                    "Disconnected",
+                    network.getDataIcon(applicationContext!!, false),
+                )
             }
         }
         else {

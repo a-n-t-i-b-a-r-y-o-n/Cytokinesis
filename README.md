@@ -35,7 +35,7 @@ Thus, this project was born.
 
 - Silly, backward reasoning provided by a certain someone about a certain something:  
   https://support.google.com/pixelphone/thread/132446941/behind-the-scenes-looks-at-the-new-internet-tile
-- Example of reverting using ADB (sadly, killed w/ November update) by Twitter user `@MishaalRahman`:  
+- Example of reverting using ADB (sadly, killed w/ November 2021 update) by Twitter user `@MishaalRahman`:  
   https://twitter.com/MishaalRahman/status/1452868924152983552
   
 ## Support
@@ -74,6 +74,9 @@ However, if you must open an issue, please include:
             - WiFi IPv6 address instead
             - Network speeds?
     - Describe the project?
+- Handle click-and-hold events on tiles
+  - Make them do the same as just clicking, basically?
+  - Make them go to network details pages?
 - Find a way to fix the stuttering?
     - Try to actually catch DISCONNECTED events?
     - Seems related to the fact that we _assume_ off state.
