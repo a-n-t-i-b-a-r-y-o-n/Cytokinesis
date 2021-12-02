@@ -14,7 +14,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import java.lang.Exception
 
-class WifiTileService() : TileService() {
+class WifiTileService : TileService() {
 
     // Network type to watch
     private val request: NetworkRequest = NetworkRequest.Builder()

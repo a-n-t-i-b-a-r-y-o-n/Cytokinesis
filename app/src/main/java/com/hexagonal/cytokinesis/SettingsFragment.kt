@@ -25,6 +25,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
+        super.onPreferenceTreeClick(preference)
+
         // Handle permissions switches and About button
         if (preference != null) {
             if (preference.key == "about") {
@@ -41,7 +43,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        return super.onPreferenceTreeClick(preference)
+        return true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

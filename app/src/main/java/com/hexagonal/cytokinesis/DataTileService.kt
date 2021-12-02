@@ -12,7 +12,7 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import java.lang.Exception
 
-class DataTileService() : TileService() {
+class DataTileService : TileService() {
 
     // Network type to watch
     private val request: NetworkRequest = NetworkRequest.Builder()
