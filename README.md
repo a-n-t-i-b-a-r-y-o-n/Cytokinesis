@@ -59,16 +59,11 @@ However, if you must open an issue, please include information such as:
 **Enjoy!**
 
 ## Project TODO
+- Add ability to change tile titles
 - Finish finding/creating the required icons
   - Normal "arrows"-type data icon when connected
   - "IWLAN" ?
-- Properly distinguish between LTE and 5G NSA
-    - How does the system do it?
-    - Use bandwidth? (Current solution; seems buggy, inaccurate)
-    - Interwebz answers indicate to use reflection, but that's inherently unstable
-- Properly distinguish between 4G and 4G+ ?
 - Find a way to fix the stuttering?
     - Try to actually catch DISCONNECTED events?
-    - Seems related to the fact that we _assume_ off state.
     - WifiManager seems to have `isWifiConnected` or something
 - Consider developing a root alternative?

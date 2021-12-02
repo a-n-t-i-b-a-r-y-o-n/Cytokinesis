@@ -42,15 +42,7 @@ fun Network.getDataIcon(context: Context, networkActive: Boolean): Int {
         }
         "network_type" -> {
             // Return icon based on network "Generation"
-            when (this.getDataGeneration(context)) {
-                DataGeneration._5G -> R.drawable.ic_baseline_5g_24
-                DataGeneration._LTE -> R.drawable.ic_baseline_lte_mobiledata_24
-                DataGeneration._4G -> R.drawable.ic_baseline_4g_mobiledata_24
-                DataGeneration._3G -> R.drawable.ic_baseline_3g_mobiledata_24
-                DataGeneration._2G -> R.drawable.ic_baseline_e_mobiledata_24
-                DataGeneration._IWLAN,
-                DataGeneration._UNKNOWN -> R.drawable.ic_baseline_question_mark_24
-            }
+            this.getDataGeneration(context).icon
         }
         else -> {
             // Unknown user icon preference
@@ -73,15 +65,7 @@ fun Network.getDataSubhead(context: Context): String {
     return if(properties != null && capabilities != null) {
         when(preference) {
             "network_type" -> {
-                when (this.getDataGeneration(context)) {
-                    DataGeneration._5G -> "5G"
-                    DataGeneration._LTE -> "LTE"
-                    DataGeneration._4G -> "4G"
-                    DataGeneration._3G -> "3G"
-                    DataGeneration._2G -> "2G"
-                    DataGeneration._IWLAN -> "IWLAN"
-                    DataGeneration._UNKNOWN -> "<Unknown Network Type>"
-                }
+                this.getDataGeneration(context).gen
             }
             "ipv4" -> {
                 // Pick first IPv4-formatted address
@@ -155,12 +139,12 @@ fun Network.getDataGeneration(context: Context): DataGeneration {
 
 /// Data network "Generations"
 // Note: Prefixed with underscores due to digits in the 1st char
-enum class DataGeneration {
-    _5G,
-    _LTE,
-    _4G,
-    _3G,
-    _2G,
-    _IWLAN,
-    _UNKNOWN,
+enum class DataGeneration(val icon: Int, val gen: String) {
+    _5G(R.drawable.ic_baseline_5g_24, "5G"),
+    _LTE(R.drawable.ic_baseline_lte_mobiledata_24, "LTE"),
+    _4G(R.drawable.ic_baseline_4g_mobiledata_24, "4G"),
+    _3G(R.drawable.ic_baseline_3g_mobiledata_24, "3G"),
+    _2G(R.drawable.ic_baseline_e_mobiledata_24, "2G"),
+    _IWLAN(R.drawable.ic_baseline_question_mark_24, "IWLAN"),
+    _UNKNOWN(R.drawable.ic_baseline_question_mark_24, "<Unknown Network Type>"),
 }

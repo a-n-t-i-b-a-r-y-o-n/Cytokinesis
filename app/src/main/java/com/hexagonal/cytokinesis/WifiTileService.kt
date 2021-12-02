@@ -73,10 +73,12 @@ class WifiTileService : TileService() {
     }
 
     fun onStateChange(state: WifiNetworkStates, network: Network?) {
+        /*
         // DEBUG: Write network data to log
         Log.w("[WifiTileService]", "WiFi network state: " + state.name)
         Log.w("[WifiTileService]", "Network Capabilities: " + getConnectionManager(applicationContext).getNetworkCapabilities(network)?.toString())
         Log.w("[WifiTileService]", "Link Properties: " + getConnectionManager(applicationContext).getLinkProperties(network)?.toString())
+         */
         if (qsTile != null && network != null) {
             if (state == WifiNetworkStates.CONNECTED) {
                 updateTile(
@@ -96,12 +98,6 @@ class WifiTileService : TileService() {
                     R.drawable.wifi_strength_off_outline,
                 )
             }
-        }
-        else {
-            /*
-            // DEBUG: Note incorrect state change in logs
-            Log.w("[WifiTileService]", "Tried to call onStateChange() but qsTile is null.")
-             */
         }
     }
 

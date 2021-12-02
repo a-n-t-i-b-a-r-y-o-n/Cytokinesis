@@ -8,9 +8,14 @@ import android.net.*
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
 import android.util.Log
+import androidx.preference.PreferenceManager
 import java.lang.Exception
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 class DataTileService : TileService() {
 
@@ -20,8 +25,10 @@ class DataTileService : TileService() {
         .setIncludeOtherUidNetworks(true)
         .build()
 
-    // Custom ConnectivityManager.NetworkCallback class
+    // ConnectivityManager.NetworkCallback
     private val netCallback: DataNetworkCallback = DataNetworkCallback { state, network -> onStateChange(state, network)}
+    // TelephonyManager.TelephonyCallback
+    private val telCallback: TelephonyChangeCallback = TelephonyChangeCallback { info -> onTelephonyChange(info) }
 
     // Called right before tile enters view
     override fun onStartListening() {
@@ -34,9 +41,13 @@ class DataTileService : TileService() {
                 R.drawable.ic_baseline_mobiledata_off_24,
             )
         }
-        // Register the network callback
-        getConnectionManager(applicationContext)
+        // Register the network connectivity change callback
+        getConnectivityManager(applicationContext)
             .registerNetworkCallback(request, netCallback)
+
+        // Register the network "display info" change callback
+        getTelephonyManager(applicationContext)
+            .registerTelephonyCallback(Executors.newSingleThreadExecutor(), telCallback)
     }
 
     // Called after tile leaves view
@@ -44,8 +55,13 @@ class DataTileService : TileService() {
         super.onStopListening()
         // Weakly try to unregister the network callback
         try {
-            getConnectionManager(applicationContext)
+            getConnectivityManager(applicationContext)
                 .unregisterNetworkCallback(netCallback)
+        } catch (e: Exception) { }
+        // Weakly try to unregister the telephony callback
+        try {
+            getTelephonyManager(applicationContext)
+                .unregisterTelephonyCallback(telCallback)
         } catch (e: Exception) { }
     }
 
@@ -71,6 +87,7 @@ class DataTileService : TileService() {
         }
     }
 
+    // Update tile in response to network state
     fun onStateChange(state: DataNetworkStates, network: Network?) {
         /*
         // DEBUG: Write network data to log
@@ -94,17 +111,33 @@ class DataTileService : TileService() {
                 )
             }
         }
-        else {
-            /*
-            // DEBUG: Note incorrect state change in logs
-            Log.w("[DataTileService]", "Tried to call onStateChange() but qsTile is null.")
-             */
+    }
+
+    // Update tile in response to telephony "display info" changes
+    fun onTelephonyChange(displayInfo: TelephonyDisplayInfo) {
+        // Proceed only if the tile is active
+        if (qsTile != null && qsTile.state == Tile.STATE_ACTIVE) {
+            // Check preferences to see if user wants icon or subheading to reflect display info
+            val iconPref = PreferenceManager.getDefaultSharedPreferences(applicationContext!!)
+                .getString("data_icon_type", "signal_strength")
+            val subheadPref = PreferenceManager.getDefaultSharedPreferences(applicationContext!!)
+                .getString("data_subheading", "network_type")
+            if (iconPref == "network_type") {
+                // Update the tile icon
+                qsTile.icon = Icon.createWithResource(applicationContext, displayInfo.getDataGeneration().icon)
+                qsTile.updateTile()
+            }
+            if (subheadPref == "network_type") {
+                // Update the subheading
+                qsTile.subtitle = displayInfo.getDataGeneration().gen
+                qsTile.updateTile()
+            }
         }
     }
 
     // Helper to get the ConnectionManager with given context
     // NOTE: This must be called from a given function override. There is no context at construction.
-    private fun getConnectionManager(context: Context): ConnectivityManager =
+    private fun getConnectivityManager(context: Context): ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     // Helper to get the TelephonyManager with given context
@@ -138,6 +171,12 @@ class DataTileService : TileService() {
         override fun onLosing(network: Network, maxMsToLive: Int) {
             super.onLosing(network, maxMsToLive)
             onNetworkChange(DataNetworkStates.DISCONNECTED, network)
+        }
+    }
+
+    class TelephonyChangeCallback(val onTelephonyChange: (info: TelephonyDisplayInfo) -> Unit) : TelephonyCallback(), TelephonyCallback.DisplayInfoListener {
+        override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) {
+            onTelephonyChange(telephonyDisplayInfo)
         }
     }
 }
