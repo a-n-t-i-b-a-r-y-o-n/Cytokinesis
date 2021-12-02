@@ -54,7 +54,7 @@ fun Network.getWifiSubhead(context: Context): String {
                 if (ipv4 != null)
                     ipv4.address.toString().substring(1)
                 else
-                    "[Unknown IPv4 address]"
+                    "<Unknown IPv4 address>"
             }
             "ipv6" -> {
                 // Pick first IPv6-formatted address
@@ -62,7 +62,7 @@ fun Network.getWifiSubhead(context: Context): String {
                 if (ipv6 != null)
                     ipv6.address.toString().substring(1)
                 else
-                    "[Unknown IPv6 address]"
+                    "<Unknown IPv6 address>"
             }
             "speed" -> transportInfo.linkSpeed.toString() + "Mbps"
             "frequency" -> transportInfo.frequency.toString() + "MHz"
@@ -74,12 +74,12 @@ fun Network.getWifiSubhead(context: Context): String {
                 "${strength * 25}%"
             }
             else -> {
-                "[Unrecognized subhead preference]"
+                "<Not Set>"
             }
         }
     }
     else {
         // Unable to get properties or capabilities
-        "[Error reading WiFi info]"
+        "<Error reading WiFi info>"
     }
 }

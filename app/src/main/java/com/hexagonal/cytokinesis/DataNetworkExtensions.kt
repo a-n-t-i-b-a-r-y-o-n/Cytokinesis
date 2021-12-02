@@ -80,7 +80,7 @@ fun Network.getDataSubhead(context: Context): String {
                     DataGeneration._3G -> "3G"
                     DataGeneration._2G -> "2G"
                     DataGeneration._IWLAN -> "IWLAN"
-                    DataGeneration._UNKNOWN -> "[Unknown Network Type]"
+                    DataGeneration._UNKNOWN -> "<Unknown Network Type>"
                 }
             }
             "ipv4" -> {
@@ -89,7 +89,7 @@ fun Network.getDataSubhead(context: Context): String {
                 if (ipv4 != null)
                     ipv4.address.toString().substring(1)
                 else
-                    "[Unknown IPv4 address]"
+                    "<Unknown IPv4 address>"
             }
             "ipv6" -> {
                 // Pick first IPv6-formatted address
@@ -97,18 +97,17 @@ fun Network.getDataSubhead(context: Context): String {
                 if (ipv6 != null)
                     ipv6.address.toString().substring(1)
                 else
-                    "[Unknown IPv6 address]"
+                    "<Unknown IPv6 address>"
             }
-            "speed" -> {
-                "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
-            }
+            "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
+            "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
             "interface_name" -> properties.interfaceName ?: "<Unknown Interface>"
-            else -> "[Unrecognized subhead preference]"
+            else -> "<Not Set>"
         }
     }
     else {
         // Unable to get properties or capabilities
-        "[Error reading mobile network info]"
+        "<Error reading mobile network info>"
     }
 }
 
