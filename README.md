@@ -59,7 +59,6 @@ However, if you must open an issue, please include information such as:
 **Enjoy!**
 
 ## Project TODO
-- Add ability to change tile titles
 - Finish finding/creating the required icons
   - Normal "arrows"-type data icon when connected
   - "IWLAN" ?
