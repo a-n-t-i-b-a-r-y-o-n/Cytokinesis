@@ -12,9 +12,26 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.runBlocking
 import java.lang.Exception
 
 class WifiTileService : TileService() {
+
+    /// Possible network states
+    enum class WifiNetworkStates {
+        CONNECTED,
+        DISCONNECTED,
+        UNAVAILABLE,
+    }
+
+    // Object representing wifi network's state
+    class WifiNetworkMetadata {
+        var network: Network? = null
+        var state: WifiNetworkStates = WifiNetworkStates.DISCONNECTED
+    }
+
+    // Instance cached network info/state
+    private var networkMetadata: WifiNetworkMetadata = WifiNetworkMetadata()
 
     // Network type to watch
     private val request: NetworkRequest = NetworkRequest.Builder()
@@ -28,17 +45,12 @@ class WifiTileService : TileService() {
     // Called right before tile enters view
     override fun onStartListening() {
         super.onStartListening()
-        // Assume off by default, since we apparently only get callbacks when connected
-        if (qsTile != null) {
-            updateTile(
-                Tile.STATE_INACTIVE,
-                "Disconnected",
-                R.drawable.wifi_strength_off_outline,
-            )
-        }
+
         // Register the network callback
-        getConnectionManager(applicationContext)
+        getConnectivityManager(applicationContext)
             .registerNetworkCallback(request, netCallback)
+
+        updateTile()
     }
 
     // Called after tile leaves view
@@ -46,7 +58,7 @@ class WifiTileService : TileService() {
         super.onStopListening()
         // Weakly try to unregister the network callback
         try {
-            getConnectionManager(applicationContext)
+            getConnectivityManager(applicationContext)
                 .unregisterNetworkCallback(netCallback)
         } catch (e: Exception) { }
     }
@@ -55,55 +67,54 @@ class WifiTileService : TileService() {
     override fun onClick() {
         super.onClick()
 
+        // Take the user to the WiFi settings screen
         val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivityAndCollapse(intent)
     }
 
     // Update all title properties in a uniform way
-    private fun updateTile(state: Int, subhead: String, icon: Int) {
+    private fun updateTile() {
         if (qsTile != null) {
-            // Set properties
-            qsTile.state = state
-            qsTile.subtitle = subhead
-            qsTile.icon = Icon.createWithResource(applicationContext, icon)
+            // Perform preference checks and such concurrently
+            runBlocking {
+                // Set tile active state
+                qsTile.state = if (networkMetadata.state == WifiNetworkStates.CONNECTED) {
+                    Tile.STATE_ACTIVE
+                } else {
+                    Tile.STATE_INACTIVE
+                }
+                // Set tile subheading
+                qsTile.subtitle = getWifiSubhead(applicationContext)
+                // Set tile icon drawable
+                qsTile.icon = Icon.createWithResource(applicationContext, getWifiIcon(applicationContext))
+            }
             // Perform UI update
             qsTile.updateTile()
         }
     }
 
-    fun onStateChange(state: WifiNetworkStates, network: Network?) {
+    // Update tile in response to network state change
+    private fun onStateChange(state: WifiNetworkStates, network: Network?) {
         /*
         // DEBUG: Write network data to log
         Log.w("[WifiTileService]", "WiFi network state: " + state.name)
         Log.w("[WifiTileService]", "Network Capabilities: " + getConnectionManager(applicationContext).getNetworkCapabilities(network)?.toString())
         Log.w("[WifiTileService]", "Link Properties: " + getConnectionManager(applicationContext).getLinkProperties(network)?.toString())
          */
-        if (qsTile != null && network != null) {
-            if (state == WifiNetworkStates.CONNECTED) {
-                updateTile(
-                    Tile.STATE_ACTIVE,
-                    network.getWifiSubhead(applicationContext!!),
-                    network.getWifiIcon(applicationContext!!),
-                )
-            }
-            else {
-                // DEBUG: Note changes to other states in logs. Can't seem to observe one directly.
-                Log.w("[WifTileService", "Network $network changed state to: ${state.name}")
-                // TODO: Check other states?
-                // TODO: Change tile active status or icon/subhead?
-                updateTile(
-                    Tile.STATE_INACTIVE,
-                    "Disconnected",
-                    R.drawable.wifi_strength_off_outline,
-                )
-            }
+
+        networkMetadata.state = state
+
+        if (network != null) {
+            networkMetadata.network = network
         }
+
+        updateTile()
     }
 
     /// Helper to get the ConnectionManager with given context
     // NOTE: This must be called from a given function override. There is no context at construction.
-    private fun getConnectionManager(context: Context): ConnectivityManager =
+    private fun getConnectivityManager(context: Context): ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     /// Helper to get the WifiManager with given context
@@ -111,11 +122,80 @@ class WifiTileService : TileService() {
     private fun getWifiManager(context: Context): WifiManager =
         context.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-    /// Possible network states
-    enum class WifiNetworkStates {
-        CONNECTED,
-        DISCONNECTED,
-        UNAVAILABLE,
+    /// WiFi icon
+    private fun getWifiIcon(context: Context): Int {
+        // Managers
+        val connectivityManager = getConnectivityManager(context)
+        val wifiManager = getWifiManager(context)
+        // Transport info
+        val transportInfo = connectivityManager.getNetworkCapabilities(networkMetadata.network)?.transportInfo as WifiInfo?
+
+        // Pick icon
+        return if (transportInfo != null) {
+            when (wifiManager.calculateSignalLevel(transportInfo.rssi)) {
+                0 -> R.drawable.wifi_strength_off_outline
+                1 -> R.drawable.wifi_strength_1
+                2 -> R.drawable.wifi_strength_2
+                3 -> R.drawable.wifi_strength_3
+                4 -> R.drawable.wifi_strength_4
+                else -> R.drawable.ic_baseline_question_mark_24
+            }
+        }
+        else {
+            R.drawable.ic_baseline_question_mark_24
+        }
+    }
+    /// Wifi subheading
+    private fun getWifiSubhead(context: Context): String {
+        /* As much as I would love to show the SSID, this only returns <unknown_ssid> even with every possible type of location permission enabled.
+                        setTileActive(getWifiManager(applicationContext).connectionInfo.ssid)  */
+
+        // Load user preference
+        val preference = PreferenceManager.getDefaultSharedPreferences(context)
+            .getString("wifi_subheading", "ipv4")
+        // Managers
+        val connectivityManager = getConnectivityManager(context)
+        val wifiManager = getWifiManager(context)
+        // Get network properties & capabilities
+        val properties = connectivityManager.getLinkProperties(networkMetadata.network)
+        val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
+        // Transport info
+        val transportInfo = connectivityManager.getNetworkCapabilities(networkMetadata.network)?.transportInfo as WifiInfo?
+
+        return if (properties != null && capabilities != null && transportInfo != null) {
+            when (preference) {
+                "ipv4" -> {
+                    // Pick first IPv4-formatted address
+                    val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv4?.address?.toString()?.substring(1) ?: "<No IPv4 Address>"
+                }
+                "ipv6" -> {
+                    // Pick first IPv6-formatted address
+                    val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv6?.address?.toString()?.substring(1) ?: "<No IPv6 Address>"
+                }
+                "speed" -> transportInfo.linkSpeed.toString() + "Mbps"
+                "frequency" -> transportInfo.frequency.toString() + "MHz"
+                "rssi" -> transportInfo.rssi.toString()
+                "strength" -> {
+                    // Calculate a signal strength value "which can be displayed to a user" per the docs
+                    val strength = wifiManager.calculateSignalLevel(transportInfo.rssi)
+                    // Turn this n/4 to a percentage
+                    "${strength * 25}%"
+                }
+                else -> {
+                    "<Not Set>"
+                }
+            }
+        }
+        else {
+            // Unable to get properties or capabilities
+            "<Error reading WiFi info>"
+        }
     }
 
     /// Network callback

@@ -11,10 +11,19 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.lang.Exception
 import java.util.concurrent.Executors
 
 class DataTileService : TileService() {
+
+    // States the data network could be in
+    enum class DataNetworkStates {
+        CONNECTED,
+        DISCONNECTED,
+        UNAVAILABLE,
+    }
 
     // Object representing the data network's state
     class DataNetworkMetadata {
@@ -78,6 +87,8 @@ class DataTileService : TileService() {
         super.onClick()
 
         //val intent = Intent(Settings.ACTION_DATA_USAGE_SETTINGS) // Sorta...
+
+        // Take the user to the data network settings screen
         val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivityAndCollapse(intent)
@@ -86,22 +97,25 @@ class DataTileService : TileService() {
     // Update all title properties in a uniform way
     private fun updateTile() {
         if (qsTile != null) {
-            // Set tile active state
-            qsTile.state = if (networkMetadata.state == DataNetworkStates.CONNECTED) {
-                Tile.STATE_ACTIVE
-            } else {
-                Tile.STATE_INACTIVE
+            // Perform preference checks and such concurrently
+            runBlocking {
+                // Set tile active state
+                qsTile.state = if (networkMetadata.state == DataNetworkStates.CONNECTED) {
+                    Tile.STATE_ACTIVE
+                } else {
+                    Tile.STATE_INACTIVE
+                }
+                // Set tile subheading
+                launch { qsTile.subtitle = getDataSubhead(applicationContext) }
+                // Set tile icon drawable
+                launch { qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext)) }
             }
-            // Set tile subheading
-            qsTile.subtitle = getDataSubhead(applicationContext)
-            // Set tile icon drawable
-            qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext))
             // Perform UI update
             qsTile.updateTile()
         }
     }
 
-    // Update tile in response to network state
+    // Update tile in response to network state change
     private fun onStateChange(state: DataNetworkStates, network: Network?) {
         /*
         // DEBUG: Write network data to log
@@ -132,7 +146,7 @@ class DataTileService : TileService() {
         val preference = PreferenceManager.getDefaultSharedPreferences(context)
             .getString("data_icon_type", "signal_strength")
         // Manager
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val telephonyManager = getTelephonyManager(context)
 
         return when (preference) {
             "signal_strength" -> {
@@ -174,7 +188,7 @@ class DataTileService : TileService() {
                 val preference = PreferenceManager.getDefaultSharedPreferences(context)
                     .getString("data_subheading", "network_type")
                 // Manager
-                val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val connectivityManager = getConnectivityManager(context)
                 // Network properties & capabilities
                 val properties = connectivityManager.getLinkProperties(networkMetadata.network)
                 val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
@@ -187,19 +201,17 @@ class DataTileService : TileService() {
                         }
                         "ipv4" -> {
                             // Pick first IPv4-formatted address
-                            val ipv4 = properties.linkAddresses.firstOrNull { address -> Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(address.address.toString()) }
-                            if (ipv4 != null)
-                                ipv4.address.toString().substring(1)
-                            else
-                                "<Unknown IPv4 address>"
+                            val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
+                                Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
+                            }
+                            ipv4?.address?.toString()?.substring(1) ?: "<No IPv4 Address>"
                         }
                         "ipv6" -> {
                             // Pick first IPv6-formatted address
-                            val ipv6 = properties.linkAddresses.firstOrNull { address -> Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(address.address.toString()) }
-                            if (ipv6 != null)
-                                ipv6.address.toString().substring(1)
-                            else
-                                "<Unknown IPv6 address>"
+                            val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
+                                Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
+                            }
+                            ipv6?.address?.toString()?.substring(1) ?: "<No IPv6 Address>"
                         }
                         "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
                         "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
@@ -227,13 +239,6 @@ class DataTileService : TileService() {
     // Used to to register/deregister callbacks
     private fun getTelephonyManager(context: Context): TelephonyManager =
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-    // States the data network could be in
-    enum class DataNetworkStates {
-        CONNECTED,
-        DISCONNECTED,
-        UNAVAILABLE,
-    }
 
     // Callback for changes to the data network
     class DataNetworkCallback(val onNetworkChange: (state: DataNetworkStates, network: Network?) -> Unit) : ConnectivityManager.NetworkCallback() {
