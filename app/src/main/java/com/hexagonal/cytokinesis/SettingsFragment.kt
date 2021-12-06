@@ -8,6 +8,9 @@ import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.*;
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -46,16 +49,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return true
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) = runBlocking {
         // Ensure permissions switches match preference values
-        resetPermissionsSwitches()
+        launch { resetPermissionsSwitches() }
+        super.onCreate(savedInstanceState)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onResume() = runBlocking {
         // Reset permissions switches in case we came back from ignored permission request
-        resetPermissionsSwitches()
+        launch { resetPermissionsSwitches() }
+        super.onResume()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissionList: Array<out String>, grantResults: IntArray) {
@@ -75,7 +78,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     // Reset all permissions switches
-    private fun resetPermissionsSwitches() {
+    private suspend fun resetPermissionsSwitches() {
         for (permission in RequestedPermission.values()) {
 
             // Get corresponding preference for this item
