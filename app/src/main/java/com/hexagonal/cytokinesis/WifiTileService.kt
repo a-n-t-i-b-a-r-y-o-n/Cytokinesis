@@ -187,6 +187,9 @@ class WifiTileService : TileService() {
                     // Turn this n/4 to a percentage
                     "${strength * 25}%"
                 }
+                "interface_name" -> {
+                    properties.interfaceName ?: "<Unknown Interface>"
+                }
                 else -> {
                     "<Not Set>"
                 }

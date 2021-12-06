@@ -7,6 +7,7 @@
         <item>Frequency</item>
         <item>RSSI</item>
         <item>Signal Strength</item>
+        <item>Interface Name</item>
     </string-array>
     <string-array name="wifi_subheading_values">
         <item>ipv4</item>
@@ -15,6 +16,7 @@
         <item>frequency</item>
         <item>rssi</item>
         <item>strength</item>
+        <item>interface_name</item>
     </string-array>
 
     <!-- Mobile Data Tile Icon types -->
