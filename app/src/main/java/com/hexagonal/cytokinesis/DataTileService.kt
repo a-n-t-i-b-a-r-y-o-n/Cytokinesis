@@ -100,15 +100,31 @@ class DataTileService : TileService() {
             // Perform preference checks and such concurrently
             runBlocking {
                 // Set tile active state
-                qsTile.state = if (networkMetadata.state == DataNetworkStates.CONNECTED) {
-                    Tile.STATE_ACTIVE
-                } else {
-                    Tile.STATE_INACTIVE
+                launch {
+                    qsTile.state = if (networkMetadata.state == DataNetworkStates.CONNECTED) {
+                        Tile.STATE_ACTIVE
+                    } else {
+                        Tile.STATE_INACTIVE
+                    }
+                }
+                // Set tile heading
+                launch {
+                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("data_heading", "network_name") ?: "network_name"
+                    qsTile.label = getDataHeading(applicationContext, preference)
                 }
                 // Set tile subheading
-                launch { qsTile.subtitle = getDataSubhead(applicationContext) }
+                launch {
+                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("data_subheading", "network_type") ?: "network_type"
+                    qsTile.subtitle = getDataHeading(applicationContext, preference)
+                }
                 // Set tile icon drawable
-                launch { qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext)) }
+                launch {
+                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("data_icon_type", "signal_strength") ?: "signal_strength"
+                    qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext, preference))
+                }
             }
             // Perform UI update
             qsTile.updateTile()
@@ -141,10 +157,7 @@ class DataTileService : TileService() {
         updateTile()
     }
 
-    private fun getDataIcon(context: Context): Int {
-        // Load user preference
-        val preference = PreferenceManager.getDefaultSharedPreferences(context)
-            .getString("data_icon_type", "signal_strength")
+    private fun getDataIcon(context: Context, preference: String): Int {
         // Manager
         val telephonyManager = getTelephonyManager(context)
 
@@ -180,13 +193,10 @@ class DataTileService : TileService() {
         }
     }
 
-    private fun getDataSubhead(context: Context): String {
+    private fun getDataHeading(context: Context, preference: String): String {
         // Only show info if connected
         return when (networkMetadata.state) {
             DataNetworkStates.CONNECTED -> {
-                // Load user preference
-                val preference = PreferenceManager.getDefaultSharedPreferences(context)
-                    .getString("data_subheading", "network_type")
                 // Manager
                 val connectivityManager = getConnectivityManager(context)
                 // Network properties & capabilities
@@ -195,6 +205,7 @@ class DataTileService : TileService() {
 
                 if(properties != null && capabilities != null) {
                     when(preference) {
+                        "network_name" -> "Mobile Data"
                         "network_type" -> {
                             // Try to get the data "generation", which requires READ_PHONE_STATE permission
                             networkMetadata.getDataGeneration(context).gen

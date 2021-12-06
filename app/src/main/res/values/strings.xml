@@ -27,6 +27,7 @@
     <!-- Settings fragment -->
     <string name="settings_fragment_label">Cytokinesis Settings</string>
     <string name="icon_type_label">Icon Type</string>
+    <string name="heading_label">Heading</string>
     <string name="subheading_label">Subheading</string>
     <!-- Wifi tile settings -->
     <string name="wifi_title_label">WiFi Tile</string>

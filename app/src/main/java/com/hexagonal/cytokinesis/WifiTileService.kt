@@ -12,6 +12,7 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.Exception
 
@@ -79,15 +80,27 @@ class WifiTileService : TileService() {
             // Perform preference checks and such concurrently
             runBlocking {
                 // Set tile active state
-                qsTile.state = if (networkMetadata.state == WifiNetworkStates.CONNECTED) {
-                    Tile.STATE_ACTIVE
-                } else {
-                    Tile.STATE_INACTIVE
+                launch {
+                    qsTile.state = if (networkMetadata.state == WifiNetworkStates.CONNECTED) {
+                        Tile.STATE_ACTIVE
+                    } else {
+                        Tile.STATE_INACTIVE
+                    }
+                }
+                // Set tile heading
+                launch {
+                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("wifi_heading", "network_name") ?: "network_name"
+                    qsTile.label = getWifiHeading(applicationContext, preference)
                 }
                 // Set tile subheading
-                qsTile.subtitle = getWifiSubhead(applicationContext)
+                launch {
+                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        .getString("wifi_subheading", "ipv4") ?: "ipv4"
+                    qsTile.subtitle = getWifiHeading(applicationContext, preference)
+                }
                 // Set tile icon drawable
-                qsTile.icon = Icon.createWithResource(applicationContext, getWifiIcon(applicationContext))
+                launch { qsTile.icon = Icon.createWithResource(applicationContext, getWifiIcon(applicationContext)) }
             }
             // Perform UI update
             qsTile.updateTile()
@@ -146,13 +159,10 @@ class WifiTileService : TileService() {
         }
     }
     /// Wifi subheading
-    private fun getWifiSubhead(context: Context): String {
+    private fun getWifiHeading(context: Context, preference: String): String {
         /* As much as I would love to show the SSID, this only returns <unknown_ssid> even with every possible type of location permission enabled.
                         setTileActive(getWifiManager(applicationContext).connectionInfo.ssid)  */
 
-        // Load user preference
-        val preference = PreferenceManager.getDefaultSharedPreferences(context)
-            .getString("wifi_subheading", "ipv4")
         // Managers
         val connectivityManager = getConnectivityManager(context)
         val wifiManager = getWifiManager(context)
@@ -164,6 +174,7 @@ class WifiTileService : TileService() {
 
         return if (properties != null && capabilities != null && transportInfo != null) {
             when (preference) {
+                "network_name" -> "WiFi"
                 "ipv4" -> {
                     // Pick first IPv4-formatted address
                     val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
