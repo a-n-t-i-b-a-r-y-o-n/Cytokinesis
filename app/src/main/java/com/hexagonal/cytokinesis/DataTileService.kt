@@ -107,10 +107,10 @@ class DataTileService : TileService() {
             runBlocking {
                 // Set tile active state
                 launch {
-                    qsTile.state = if (networkMetadata.state == DataNetworkStates.CONNECTED) {
-                        Tile.STATE_ACTIVE
-                    } else {
-                        Tile.STATE_INACTIVE
+                    qsTile.state = when (networkMetadata.state) {
+                        DataNetworkStates.CONNECTED,
+                        DataNetworkStates.LOST -> Tile.STATE_ACTIVE
+                        else -> Tile.STATE_INACTIVE
                     }
                 }
                 // Set tile heading

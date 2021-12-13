@@ -83,10 +83,10 @@ class WifiTileService : TileService() {
             runBlocking {
                 // Set tile active state
                 launch {
-                    qsTile.state = if (networkMetadata.state == WifiNetworkStates.CONNECTED) {
-                        Tile.STATE_ACTIVE
-                    } else {
-                        Tile.STATE_INACTIVE
+                    qsTile.state = when (networkMetadata.state) {
+                        WifiNetworkStates.CONNECTED,
+                        WifiNetworkStates.LOST -> Tile.STATE_ACTIVE
+                        else -> Tile.STATE_INACTIVE
                     }
                 }
                 // Set tile heading
