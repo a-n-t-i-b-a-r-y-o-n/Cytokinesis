@@ -74,7 +74,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 ?.isChecked = grantResults[i] == PackageManager.PERMISSION_GRANTED
         }
 
-        super.onRequestPermissionsResult(requestCode, permissionList, grantResults)
+        // TODO: Is super.onRequestPermissionsResult deprecated?
+        // super.onRequestPermissionsResult(requestCode, permissionList, grantResults)
     }
 
     // Reset all permissions switches

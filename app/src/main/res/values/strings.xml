@@ -1,13 +1,27 @@
 <resources>
-    <!-- General strings -->
+    <!-- App UI strings -->
     <string name="app_name">Cytokinesis</string>
     <string name="go_back">Back</string>
 
-    <!-- WiFi tile strings -->
-    <string name="wifi_tile_label">WiFi</string>
+    <!-- Network types -->
+    <string name="network_wifi">WiFi</string>
+    <string name="network_data">Mobile Data</string>
 
-    <!-- Data tile strings -->
-    <string name="data_tile_label">Mobile Data</string>
+    <!-- Network states -->
+    <string name="state_disconnected">&lt;Disconnected&gt;</string>
+    <string name="state_lost">&lt;Lost&gt;</string>
+    <string name="state_unavailable">&lt;Unavailable&gt;</string>
+
+    <!-- Displayable error strings -->
+    <string name="no_ipv4">&lt;No IPv4 Address&gt;</string>
+    <string name="no_ipv6">&lt;No IPv6 Address&gt;</string>
+    <string name="not_set">&lt;Not Set&gt;</string>
+    <string name="unknown_interface">&lt;Unknown Interface&gt;</string>
+    <string name="permission_denied">&lt;Missing Permission&gt;</string> <!-- Copied in DataGeneration enum -->
+    <string name="error_read_data_info">&lt;Error reading Mobile Data info&gt;</string>
+    <string name="error_read_wifi_info">&lt;Error reading WiFi info&gt;</string>
+
+
     
     <!-- About fragment -->
     <string name="about_fragment_label">About Cytokinesis</string>
@@ -44,16 +58,4 @@
     <string name="change_wifi_state">Change WiFi State</string>
     <string name="internet">Internet</string>
 
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

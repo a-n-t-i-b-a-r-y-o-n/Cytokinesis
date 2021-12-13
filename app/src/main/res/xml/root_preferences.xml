@@ -20,13 +20,6 @@
 
     <PreferenceCategory app:title="@string/data_title_label">
         <ListPreference
-            app:key="data_icon_type"
-            app:defaultValue="signal_strength"
-            app:entries="@array/data_icon_type_entries"
-            app:entryValues="@array/data_icon_type_values"
-            app:title="@string/icon_type_label"
-            app:useSimpleSummaryProvider="true" />
-        <ListPreference
             app:key="data_heading"
             app:defaultValue="network_name"
             app:entries="@array/data_heading_entries"
@@ -39,6 +32,13 @@
             app:entries="@array/data_heading_entries"
             app:entryValues="@array/data_heading_values"
             app:title="@string/subheading_label"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:key="data_icon_type"
+            app:defaultValue="signal_strength"
+            app:entries="@array/data_icon_type_entries"
+            app:entryValues="@array/data_icon_type_values"
+            app:title="@string/icon_type_label"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 

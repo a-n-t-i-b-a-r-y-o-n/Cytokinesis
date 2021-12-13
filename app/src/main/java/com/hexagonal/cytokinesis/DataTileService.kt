@@ -10,6 +10,7 @@ import android.service.quicksettings.TileService
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
+import android.util.Log
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -22,6 +23,7 @@ class DataTileService : TileService() {
     enum class DataNetworkStates {
         CONNECTED,
         DISCONNECTED,
+        LOST,
         UNAVAILABLE,
     }
 
@@ -74,12 +76,16 @@ class DataTileService : TileService() {
         try {
             getConnectivityManager(applicationContext)
                 .unregisterNetworkCallback(netCallback)
-        } catch (e: Exception) { }
+        } catch (e: Exception) {
+            Log.d("[DataTileService]", "Unable to unregister network callback.")
+        }
         // Weakly try to unregister the telephony callback
         try {
             getTelephonyManager(applicationContext)
                 .unregisterTelephonyCallback(telCallback)
-        } catch (e: Exception) { }
+        } catch (e: Exception) {
+            Log.d("[DataTileService]", "Unable to unregister telephony callback.")
+        }
     }
 
     // Called when the tile is clicked/tapped
@@ -174,6 +180,7 @@ class DataTileService : TileService() {
             }
             "arrows" -> {
                 when (networkMetadata.state) {
+                    DataNetworkStates.LOST,
                     DataNetworkStates.CONNECTED -> {
                         // TODO: Find a normal arrows "on" icon
                         R.drawable.ic_baseline_question_mark_24
@@ -192,7 +199,7 @@ class DataTileService : TileService() {
             }
         }
     }
-
+    /// Data heading and/or subheading
     private fun getDataHeading(context: Context, preference: String): String {
         // Only show info if connected
         return when (networkMetadata.state) {
@@ -205,7 +212,7 @@ class DataTileService : TileService() {
 
                 if(properties != null && capabilities != null) {
                     when(preference) {
-                        "network_name" -> "Mobile Data"
+                        "network_name" -> getString(R.string.network_data)
                         "network_type" -> {
                             // Try to get the data "generation", which requires READ_PHONE_STATE permission
                             networkMetadata.getDataGeneration(context).gen
@@ -215,28 +222,29 @@ class DataTileService : TileService() {
                             val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
                                 Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
                             }
-                            ipv4?.address?.toString()?.substring(1) ?: "<No IPv4 Address>"
+                            ipv4?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv4)
                         }
                         "ipv6" -> {
                             // Pick first IPv6-formatted address
                             val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
                                 Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
                             }
-                            ipv6?.address?.toString()?.substring(1) ?: "<No IPv6 Address>"
+                            ipv6?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv6)
                         }
                         "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
                         "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
-                        "interface_name" -> properties.interfaceName ?: "<Unknown Interface>"
-                        else -> "<Not Set>"
+                        "interface_name" -> properties.interfaceName ?: getString(R.string.unknown_interface)
+                        else -> getString(R.string.not_set)
                     }
                 }
                 else {
                     // Unable to get properties or capabilities
-                    "<Error reading mobile network info>"
+                    getString(R.string.error_read_data_info)
                 }
             }
-            DataNetworkStates.DISCONNECTED -> "<Disconnected>"
-            DataNetworkStates.UNAVAILABLE -> "<Unavailable>"
+            DataNetworkStates.DISCONNECTED -> getString(R.string.state_disconnected)
+            DataNetworkStates.LOST -> getString(R.string.state_lost)
+            DataNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
         }
 
     }
@@ -266,7 +274,7 @@ class DataTileService : TileService() {
 
         override fun onLost(network: Network) {
             super.onLost(network)
-            onNetworkChange(DataNetworkStates.DISCONNECTED, network)
+            onNetworkChange(DataNetworkStates.LOST, network)
         }
 
         override fun onLosing(network: Network, maxMsToLive: Int) {
