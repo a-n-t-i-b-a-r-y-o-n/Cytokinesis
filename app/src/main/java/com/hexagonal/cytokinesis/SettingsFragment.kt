@@ -1,20 +1,19 @@
 package com.hexagonal.cytokinesis
 
 import android.Manifest
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.coroutines.*;
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
-    enum class RequestedPermission(val preferenceKey: String, val permissionString: String) {
+    enum class RequiredPermission(val preferenceKey: String, val permissionString: String) {
         AccessNetworkState("permission_accessnetworkstate", Manifest.permission.ACCESS_NETWORK_STATE),
         ChangeNetworkState("permission_changenetworkstate", Manifest.permission.CHANGE_NETWORK_STATE),
         ReadPhoneState("permission_readphonestate", Manifest.permission.READ_PHONE_STATE),
@@ -23,49 +22,76 @@ class SettingsFragment : PreferenceFragmentCompat() {
         Internet("permission_internet", Manifest.permission.INTERNET),
     }
 
+    // Change listener for the underlying preferences
+    private var changeListener: SharedPreferences.OnSharedPreferenceChangeListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (key.startsWith("permission")) {
+                // Identify associated RequiredPermission value
+                val permission = RequiredPermission.values().first { p -> p.preferenceKey == key }
+                // Request/drop permission and invert state
+                onPermissionSwitchChanged(sharedPreferences.getBoolean(key, false), permission)
+            }
+        }
+
+    // Build preference list
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
     }
 
-    override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-        super.onPreferenceTreeClick(preference)
-
-        // Handle permissions switches and About button
-        if (preference != null) {
-            if (preference.key == "about") {
-                // Navigate to AboutFragment
+    // Handle clicks, specifically for the About button.
+    // NOTE: Probably shouldn't do anything computationally heavy in this method.
+    override fun onPreferenceTreeClick(preference: Preference?) = runBlocking {
+        // Handle click event on the About button
+        launch {
+            if (preference != null && preference.key == "about") {
                 findNavController().navigate(R.id.action_SettingsFragment_to_AboutFragment)
             }
-            else if (preference.key.startsWith("permission")) {
-                // Get current preference state
-                val state = (preference as TwoStatePreference).isChecked
-                // Identify associated RequestedPermission
-                val permission = RequestedPermission.values().first { p -> p.preferenceKey == preference.key }
-                // Request/drop permission and invert state
-                onPermissionSwitchChanged(state, permission)
-            }
         }
-
-        return true
+        super.onPreferenceTreeClick(preference)
     }
 
+    // Initial view creation
     override fun onCreate(savedInstanceState: Bundle?) = runBlocking {
         // Ensure permissions switches match preference values
         launch { resetPermissionsSwitches() }
         super.onCreate(savedInstanceState)
     }
 
+    // Resume (or return from ignored permissions request)
     override fun onResume() = runBlocking {
         // Reset permissions switches in case we came back from ignored permission request
-        launch { resetPermissionsSwitches() }
+        launch {
+            resetPermissionsSwitches()
+        }
+        // Register the preference change listener
+        launch {
+            try {
+                preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(changeListener)
+            } catch (e: Exception) {
+                Log.d("[SettingsFragment]", "Unable to register preference listener.")
+            }
+        }
         super.onResume()
     }
 
+    // Pause/leave
+    override fun onPause() = runBlocking {
+        launch {
+            try {
+                preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(changeListener)
+            } catch (e: Exception) {
+                Log.d("[SettingsFragment]", "Unable to unregister preference listener.")
+            }
+        }
+        super.onPause()
+    }
+
+    // Return from permission request explicitly accepted or denied
     override fun onRequestPermissionsResult(requestCode: Int, permissionList: Array<out String>, grantResults: IntArray) {
         // Handle multiple permissions, even though we only request them one at a time
         for (i in 0..permissionList.size) {
             // Identify preference key associated with the permission
-            val key = RequestedPermission.values()
+            val key = RequiredPermission.values()
                 .first { p -> p.permissionString == permissionList[i] }
                 .preferenceKey
 
@@ -79,8 +105,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     // Reset all permissions switches
-    private suspend fun resetPermissionsSwitches() {
-        for (permission in RequestedPermission.values()) {
+    private fun resetPermissionsSwitches() {
+        for (permission in RequiredPermission.values()) {
 
             // Get corresponding preference for this item
             val switchPreference = findPreference<SwitchPreferenceCompat>(permission.preferenceKey)!!
@@ -94,7 +120,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     // Switch flip handler
-    private fun onPermissionSwitchChanged(value: Boolean, permission: RequestedPermission) {
+    private fun onPermissionSwitchChanged(value: Boolean, permission: RequiredPermission) {
         when (value) {
             true -> {
                 // Need to request this permission

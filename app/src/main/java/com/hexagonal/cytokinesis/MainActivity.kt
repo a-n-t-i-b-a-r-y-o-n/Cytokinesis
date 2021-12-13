@@ -1,9 +1,6 @@
 package com.hexagonal.cytokinesis
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -11,7 +8,6 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
-import androidx.core.app.ActivityCompat
 import com.hexagonal.cytokinesis.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
