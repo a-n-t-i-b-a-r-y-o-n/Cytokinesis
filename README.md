@@ -62,7 +62,5 @@ However, if you must open an issue, please include information such as:
 - Finish finding/creating the required icons
   - Normal "arrows"-type data icon when connected
   - "IWLAN" ?
-- Find a way to fix the stuttering?
-    - Try to actually catch DISCONNECTED events?
-    - WifiManager seems to have `isWifiConnected` or something
+- Find a way to fix occasional stuttering?
 - Consider developing a root alternative?
