@@ -131,7 +131,7 @@ class DataTileService : TileService() {
                         // Set tile subheading
                         launch {
                             val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                                .getString("data_subheading", "network_type") ?: "network_type"
+                                .getString("data_subheading", "network_type") ?: "state"
                             qsTile.subtitle = getDataHeading(applicationContext, preference)
                         }
                         // Set tile icon drawable
@@ -250,6 +250,7 @@ class DataTileService : TileService() {
                 }
                 "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
                 "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
+                "interface_name" -> properties.interfaceName ?: getString(R.string.error_unknown_interface)
                 "state" -> {
                     when (networkMetadata.state) {
                         DataNetworkStates.CONNECTED -> getString(R.string.state_connected)
@@ -258,7 +259,6 @@ class DataTileService : TileService() {
                         DataNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
                     }
                 }
-                "interface_name" -> properties.interfaceName ?: getString(R.string.error_unknown_interface)
                 else -> getString(R.string.error_not_set)
             }
         }

@@ -96,7 +96,7 @@ class WifiTileService : TileService() {
                         // Set tile subheading
                         launch {
                             val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                                .getString("wifi_subheading", "ipv4") ?: "ipv4"
+                                .getString("wifi_subheading", "ipv4") ?: "state"
                             qsTile.subtitle = getWifiHeading(applicationContext, preference)
                         }
                         // Set tile icon drawable
@@ -209,6 +209,9 @@ class WifiTileService : TileService() {
                     // Turn this n/4 to a percentage
                     "${strength * 25}%"
                 }
+                "interface_name" -> {
+                    properties.interfaceName ?: getString(R.string.error_unknown_interface)
+                }
                 "state" -> {
                     when(networkMetadata.state) {
                         WifiNetworkStates.CONNECTED -> getString(R.string.state_connected)
@@ -216,9 +219,6 @@ class WifiTileService : TileService() {
                         WifiNetworkStates.LOST -> getString(R.string.state_lost)
                         WifiNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
                     }
-                }
-                "interface_name" -> {
-                    properties.interfaceName ?: getString(R.string.error_unknown_interface)
                 }
                 else -> getString(R.string.error_not_set)
             }

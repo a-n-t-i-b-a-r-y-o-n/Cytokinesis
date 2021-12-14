@@ -11,7 +11,7 @@
             app:useSimpleSummaryProvider="true" />
         <ListPreference
             app:key="wifi_subheading"
-            app:defaultValue="ipv4"
+            app:defaultValue="state"
             app:entries="@array/wifi_heading_entries"
             app:entryValues="@array/wifi_heading_values"
             app:title="@string/subheading_label"
@@ -28,7 +28,7 @@
             app:useSimpleSummaryProvider="true" />
         <ListPreference
             app:key="data_subheading"
-            app:defaultValue="network_type"
+            app:defaultValue="state"
             app:entries="@array/data_heading_entries"
             app:entryValues="@array/data_heading_values"
             app:title="@string/subheading_label"

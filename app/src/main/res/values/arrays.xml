@@ -9,6 +9,7 @@
         <item>RSSI</item>
         <item>Signal Strength</item>
         <item>Interface Name</item>
+        <item>Connection State</item>
     </string-array>
     <string-array name="wifi_heading_values">
         <item>network_name</item>
@@ -19,6 +20,7 @@
         <item>rssi</item>
         <item>strength</item>
         <item>interface_name</item>
+        <item>state</item>
     </string-array>
 
     <!-- Mobile Data Tile Icon types -->
@@ -41,6 +43,7 @@
         <item>Link Speed (Mbps)</item>
         <item>Link Speed (Kbps)</item>
         <item>Interface Name</item>
+        <item>Connection State</item>
     </string-array>
     <string-array name="data_heading_values">
         <item>network_name</item>
@@ -50,5 +53,6 @@
         <item>speed_mbps</item>
         <item>speed_kbps</item>
         <item>interface_name</item>
+        <item>state</item>
     </string-array>
 </resources>
