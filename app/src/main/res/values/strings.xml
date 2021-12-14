@@ -8,16 +8,18 @@
     <string name="network_data">Mobile Data</string>
 
     <!-- Network states -->
-    <string name="state_disconnected">&lt;Disconnected&gt;</string>
-    <string name="state_lost">&lt;Lost&gt;</string>
-    <string name="state_unavailable">&lt;Unavailable&gt;</string>
+    <string name="state_connected">Connected</string>
+    <string name="state_disconnected">Disconnected</string>
+    <string name="state_lost">Lost</string>
+    <string name="state_unavailable">Unavailable</string>
+    <string name="state_disabled">Disabled</string>
 
     <!-- Displayable error strings -->
-    <string name="no_ipv4">&lt;No IPv4 Address&gt;</string>
-    <string name="no_ipv6">&lt;No IPv6 Address&gt;</string>
-    <string name="not_set">&lt;Not Set&gt;</string>
-    <string name="unknown_interface">&lt;Unknown Interface&gt;</string>
-    <string name="permission_denied">&lt;Missing Permission&gt;</string> <!-- Copied in DataGeneration enum -->
+    <string name="error_no_ipv4">No IPv4 Address</string>
+    <string name="error_no_ipv6">No IPv6 Address</string>
+    <string name="error_not_set">&lt;Not Set&gt;</string>
+    <string name="error_unknown_interface">Unknown Interface</string>
+    <string name="error_permission_denied">Missing Permission</string> <!-- Copied in DataGeneration enum -->
     <string name="error_read_data_info">&lt;Error reading Mobile Data info&gt;</string>
     <string name="error_read_wifi_info">&lt;Error reading WiFi info&gt;</string>
 

@@ -81,28 +81,37 @@ class WifiTileService : TileService() {
         if (qsTile != null) {
             // Perform preference checks and such concurrently
             runBlocking {
-                // Set tile active state
-                launch {
-                    qsTile.state = when (networkMetadata.state) {
-                        WifiNetworkStates.CONNECTED,
-                        WifiNetworkStates.LOST -> Tile.STATE_ACTIVE
-                        else -> Tile.STATE_INACTIVE
+                when {
+                    getWifiManager(applicationContext).isWifiEnabled -> {
+                        // Set tile active state
+                        launch {
+                            Tile.STATE_ACTIVE
+                        }
+                        // Set tile heading
+                        launch {
+                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                .getString("wifi_heading", "network_name") ?: "network_name"
+                            qsTile.label = getWifiHeading(applicationContext, preference)
+                        }
+                        // Set tile subheading
+                        launch {
+                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                .getString("wifi_subheading", "ipv4") ?: "ipv4"
+                            qsTile.subtitle = getWifiHeading(applicationContext, preference)
+                        }
+                        // Set tile icon drawable
+                        launch { qsTile.icon = Icon.createWithResource(applicationContext, getWifiIcon(applicationContext)) }
+                    }
+                    else -> {
+                        launch {
+                            qsTile.state = Tile.STATE_INACTIVE
+                            qsTile.label = getString(R.string.network_wifi)
+                            qsTile.subtitle = getString(R.string.state_disabled)
+                            qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.wifi_strength_off_outline)
+                        }
                     }
                 }
-                // Set tile heading
-                launch {
-                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("wifi_heading", "network_name") ?: "network_name"
-                    qsTile.label = getWifiHeading(applicationContext, preference)
-                }
-                // Set tile subheading
-                launch {
-                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("wifi_subheading", "ipv4") ?: "ipv4"
-                    qsTile.subtitle = getWifiHeading(applicationContext, preference)
-                }
-                // Set tile icon drawable
-                launch { qsTile.icon = Icon.createWithResource(applicationContext, getWifiIcon(applicationContext)) }
+
             }
             // Perform UI update
             qsTile.updateTile()
@@ -162,60 +171,61 @@ class WifiTileService : TileService() {
     }
     /// Wifi heading and/or subheading
     private fun getWifiHeading(context: Context, preference: String): String {
-        return when(networkMetadata.state) {
-            WifiNetworkStates.CONNECTED -> {
-                /* As much as I would love to show the SSID, this only returns <unknown_ssid> even with every possible type of location permission enabled.
+        /* As much as I would love to show the SSID, this only returns <unknown_ssid> even with every possible type of location permission enabled.
                         setTileActive(getWifiManager(applicationContext).connectionInfo.ssid)  */
 
-                // Managers
-                val connectivityManager = getConnectivityManager(context)
-                val wifiManager = getWifiManager(context)
-                // Get network properties & capabilities
-                val properties = connectivityManager.getLinkProperties(networkMetadata.network)
-                val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
-                // Transport info
-                val transportInfo = connectivityManager.getNetworkCapabilities(networkMetadata.network)?.transportInfo as WifiInfo?
+        // Managers
+        val connectivityManager = getConnectivityManager(context)
+        val wifiManager = getWifiManager(context)
+        // Get network properties & capabilities
+        val properties = connectivityManager.getLinkProperties(networkMetadata.network)
+        val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
+        // Transport info
+        val transportInfo = connectivityManager.getNetworkCapabilities(networkMetadata.network)?.transportInfo as WifiInfo?
 
-                if (properties != null && capabilities != null && transportInfo != null) {
-                    when (preference) {
-                        "network_name" -> getString(R.string.network_wifi)
-                        "ipv4" -> {
-                            // Pick first IPv4-formatted address
-                            val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
-                                Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
-                            }
-                            ipv4?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv4)
-                        }
-                        "ipv6" -> {
-                            // Pick first IPv6-formatted address
-                            val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
-                                Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
-                            }
-                            ipv6?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv6)
-                        }
-                        "speed" -> transportInfo.linkSpeed.toString() + "Mbps"
-                        "frequency" -> transportInfo.frequency.toString() + "MHz"
-                        "rssi" -> transportInfo.rssi.toString()
-                        "strength" -> {
-                            // Calculate a signal strength value "which can be displayed to a user" per the docs
-                            val strength = wifiManager.calculateSignalLevel(transportInfo.rssi)
-                            // Turn this n/4 to a percentage
-                            "${strength * 25}%"
-                        }
-                        "interface_name" -> {
-                            properties.interfaceName ?: getString(R.string.unknown_interface)
-                        }
-                        else -> getString(R.string.not_set)
+        return if (properties != null && capabilities != null && transportInfo != null) {
+            when (preference) {
+                "network_name" -> getString(R.string.network_wifi)
+                "ipv4" -> {
+                    // Pick first IPv4-formatted address
+                    val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv4?.address?.toString()?.substring(1) ?: getString(R.string.error_no_ipv4)
+                }
+                "ipv6" -> {
+                    // Pick first IPv6-formatted address
+                    val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv6?.address?.toString()?.substring(1) ?: getString(R.string.error_no_ipv6)
+                }
+                "speed" -> transportInfo.linkSpeed.toString() + "Mbps"
+                "frequency" -> transportInfo.frequency.toString() + "MHz"
+                "rssi" -> transportInfo.rssi.toString()
+                "strength" -> {
+                    // Calculate a signal strength value "which can be displayed to a user" per the docs
+                    val strength = wifiManager.calculateSignalLevel(transportInfo.rssi)
+                    // Turn this n/4 to a percentage
+                    "${strength * 25}%"
+                }
+                "state" -> {
+                    when(networkMetadata.state) {
+                        WifiNetworkStates.CONNECTED -> getString(R.string.state_connected)
+                        WifiNetworkStates.DISCONNECTED -> getString(R.string.state_disconnected)
+                        WifiNetworkStates.LOST -> getString(R.string.state_lost)
+                        WifiNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
                     }
                 }
-                else {
-                    // Unable to get properties or capabilities
-                    getString(R.string.error_read_wifi_info)
+                "interface_name" -> {
+                    properties.interfaceName ?: getString(R.string.error_unknown_interface)
                 }
+                else -> getString(R.string.error_not_set)
             }
-            WifiNetworkStates.DISCONNECTED -> getString(R.string.state_disconnected)
-            WifiNetworkStates.LOST -> getString(R.string.state_lost)
-            WifiNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
+        }
+        else {
+            // Unable to get properties or capabilities
+            getString(R.string.error_read_wifi_info)
         }
 
     }

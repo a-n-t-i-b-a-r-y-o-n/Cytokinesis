@@ -1,7 +1,9 @@
 package com.hexagonal.cytokinesis
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.drawable.Icon
 import android.net.*
 import android.provider.Settings
@@ -101,36 +103,54 @@ class DataTileService : TileService() {
     }
 
     // Update all title properties in a uniform way
+    @SuppressLint("MissingPermission")
     private fun updateTile() {
         if (qsTile != null) {
             // Perform preference checks and such concurrently
             runBlocking {
-                // Set tile active state
-                launch {
-                    qsTile.state = when (networkMetadata.state) {
-                        DataNetworkStates.CONNECTED,
-                        DataNetworkStates.LOST -> Tile.STATE_ACTIVE
-                        else -> Tile.STATE_INACTIVE
+                // Check permission
+                when {
+                    getReadPhoneStatePermission(applicationContext) != PackageManager.PERMISSION_GRANTED -> {
+                        // We don't have required permission to know data state
+                        qsTile.state = Tile.STATE_UNAVAILABLE
+                        qsTile.label = getString(R.string.network_data)
+                        qsTile.subtitle = getString(R.string.error_permission_denied)
+                        qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_off_outline)
+                    }
+                    getTelephonyManager(applicationContext).isDataEnabled -> {
+                        // Set tile active state
+                        launch {
+                            qsTile.state = Tile.STATE_ACTIVE
+                        }
+                        // Set tile heading
+                        launch {
+                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                .getString("data_heading", "network_name") ?: "network_name"
+                            qsTile.label = getDataHeading(applicationContext, preference)
+                        }
+                        // Set tile subheading
+                        launch {
+                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                .getString("data_subheading", "network_type") ?: "network_type"
+                            qsTile.subtitle = getDataHeading(applicationContext, preference)
+                        }
+                        // Set tile icon drawable
+                        launch {
+                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                .getString("data_icon_type", "signal_strength") ?: "signal_strength"
+                            qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext, preference))
+                        }
+                    }
+                    else -> {
+                        launch {
+                            qsTile.state = Tile.STATE_INACTIVE
+                            qsTile.label = getString(R.string.network_data)
+                            qsTile.subtitle = getString(R.string.state_disabled)
+                            qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_off_outline)
+                        }
                     }
                 }
-                // Set tile heading
-                launch {
-                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("data_heading", "network_name") ?: "network_name"
-                    qsTile.label = getDataHeading(applicationContext, preference)
-                }
-                // Set tile subheading
-                launch {
-                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("data_subheading", "network_type") ?: "network_type"
-                    qsTile.subtitle = getDataHeading(applicationContext, preference)
-                }
-                // Set tile icon drawable
-                launch {
-                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        .getString("data_icon_type", "signal_strength") ?: "signal_strength"
-                    qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext, preference))
-                }
+
             }
             // Perform UI update
             qsTile.updateTile()
@@ -201,50 +221,50 @@ class DataTileService : TileService() {
     }
     /// Data heading and/or subheading
     private fun getDataHeading(context: Context, preference: String): String {
-        // Only show info if connected
-        return when (networkMetadata.state) {
-            DataNetworkStates.CONNECTED -> {
-                // Manager
-                val connectivityManager = getConnectivityManager(context)
-                // Network properties & capabilities
-                val properties = connectivityManager.getLinkProperties(networkMetadata.network)
-                val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
+        // Manager
+        val connectivityManager = getConnectivityManager(context)
+        // Network properties & capabilities
+        val properties = connectivityManager.getLinkProperties(networkMetadata.network)
+        val capabilities = connectivityManager.getNetworkCapabilities(networkMetadata.network)
 
-                if(properties != null && capabilities != null) {
-                    when(preference) {
-                        "network_name" -> getString(R.string.network_data)
-                        "network_type" -> {
-                            // Try to get the data "generation", which requires READ_PHONE_STATE permission
-                            networkMetadata.getDataGeneration(context).gen
-                        }
-                        "ipv4" -> {
-                            // Pick first IPv4-formatted address
-                            val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
-                                Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
-                            }
-                            ipv4?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv4)
-                        }
-                        "ipv6" -> {
-                            // Pick first IPv6-formatted address
-                            val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
-                                Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
-                            }
-                            ipv6?.address?.toString()?.substring(1) ?: getString(R.string.no_ipv6)
-                        }
-                        "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
-                        "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
-                        "interface_name" -> properties.interfaceName ?: getString(R.string.unknown_interface)
-                        else -> getString(R.string.not_set)
+        return if(properties != null && capabilities != null) {
+            when(preference) {
+                "network_name" -> getString(R.string.network_data)
+                "network_type" -> {
+                    // Try to get the data "generation", which requires READ_PHONE_STATE permission
+                    networkMetadata.getDataGeneration(context).gen
+                }
+                "ipv4" -> {
+                    // Pick first IPv4-formatted address
+                    val ipv4 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("(\\d{1,3}\\.){3}\\d{1,3}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv4?.address?.toString()?.substring(1) ?: getString(R.string.error_no_ipv4)
+                }
+                "ipv6" -> {
+                    // Pick first IPv6-formatted address
+                    val ipv6 = properties.linkAddresses.firstOrNull { linkAddress ->
+                        Regex("fe80:(:[\\w\\d]{0,4}){0,4}").containsMatchIn(linkAddress.address.toString())
+                    }
+                    ipv6?.address?.toString()?.substring(1) ?: getString(R.string.error_no_ipv6)
+                }
+                "speed_mbps" -> "${capabilities.linkUpstreamBandwidthKbps / 1000} Mbps / ${capabilities.linkDownstreamBandwidthKbps / 1000} Mbps"
+                "speed_kbps" -> "${capabilities.linkUpstreamBandwidthKbps} Kbps / ${capabilities.linkDownstreamBandwidthKbps} Kbps"
+                "state" -> {
+                    when (networkMetadata.state) {
+                        DataNetworkStates.CONNECTED -> getString(R.string.state_connected)
+                        DataNetworkStates.DISCONNECTED -> getString(R.string.state_disconnected)
+                        DataNetworkStates.LOST -> getString(R.string.state_lost)
+                        DataNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
                     }
                 }
-                else {
-                    // Unable to get properties or capabilities
-                    getString(R.string.error_read_data_info)
-                }
+                "interface_name" -> properties.interfaceName ?: getString(R.string.error_unknown_interface)
+                else -> getString(R.string.error_not_set)
             }
-            DataNetworkStates.DISCONNECTED -> getString(R.string.state_disconnected)
-            DataNetworkStates.LOST -> getString(R.string.state_lost)
-            DataNetworkStates.UNAVAILABLE -> getString(R.string.state_unavailable)
+        }
+        else {
+            // Unable to get properties or capabilities - assume disconnected
+            getString(R.string.error_read_data_info)
         }
 
     }
@@ -258,6 +278,10 @@ class DataTileService : TileService() {
     // Used to to register/deregister callbacks
     private fun getTelephonyManager(context: Context): TelephonyManager =
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+    // Helper to check for READ_PHONE_STATE permission
+    private fun getReadPhoneStatePermission(context: Context): Int =
+        context.checkSelfPermission(RequiredPermission.ReadPhoneState.permissionString)
 
     // Callback for changes to the data network
     class DataNetworkCallback(val onNetworkChange: (state: DataNetworkStates, network: Network?) -> Unit) : ConnectivityManager.NetworkCallback() {
