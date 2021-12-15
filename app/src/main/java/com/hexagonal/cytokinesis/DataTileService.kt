@@ -217,7 +217,7 @@ class DataTileService : TileService() {
         return when (preference) {
             "signal_strength" -> {
                 when (telephonyManager.signalStrength?.level) {
-                    0 -> R.drawable.network_strength_off_outline
+                    0 -> R.drawable.ic_baseline_signal_cellular_0_bar_24
                     1 -> R.drawable.network_strength_1
                     2 -> R.drawable.network_strength_2
                     3 -> R.drawable.network_strength_3
