@@ -13,13 +13,12 @@
     <string name="state_lost">Lost</string>
     <string name="state_unavailable">Unavailable</string>
     <string name="state_disabled">Disabled</string>
+    <string name="ellipses">…</string> <!-- Used to show state is being determined -->
 
     <!-- Displayable error strings -->
     <string name="error_not_set">Preference Not Set</string>
     <string name="error_unknown_interface">Unknown Interface</string>
     <string name="error_permission_denied">Missing Permission</string> <!-- Copied in DataGeneration enum -->
-    <string name="error_read_data_info">Error reading Mobile Data info</string>
-    <string name="error_read_wifi_info">Error reading WiFi info</string>
 
 
     

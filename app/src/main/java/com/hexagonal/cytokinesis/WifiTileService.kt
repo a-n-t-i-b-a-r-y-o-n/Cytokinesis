@@ -253,7 +253,7 @@ class WifiTileService : TileService() {
         }
         else {
             // Unable to get properties or capabilities
-            getString(R.string.error_read_wifi_info)
+            getString(R.string.ellipses)
         }
 
     }

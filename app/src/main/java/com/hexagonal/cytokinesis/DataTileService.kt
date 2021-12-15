@@ -290,8 +290,8 @@ class DataTileService : TileService() {
             }
         }
         else {
-            // Unable to get properties or capabilities - assume disconnected
-            getString(R.string.error_read_data_info)
+            // Unable to get properties or capabilities
+            getString(R.string.ellipses)
         }
 
     }
