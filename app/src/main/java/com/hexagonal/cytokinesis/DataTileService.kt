@@ -111,35 +111,62 @@ class DataTileService : TileService() {
                 // Check permission
                 when {
                     getReadPhoneStatePermission(applicationContext) != PackageManager.PERMISSION_GRANTED -> {
-                        // We don't have required permission to know data state
+                        // Update tile to reflect the missing READ_PHONE_STATE permission
                         qsTile.state = Tile.STATE_UNAVAILABLE
                         qsTile.label = getString(R.string.network_data)
                         qsTile.subtitle = getString(R.string.error_permission_denied)
                         qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_off_outline)
                     }
                     getTelephonyManager(applicationContext).isDataEnabled -> {
-                        // Set tile active state
+                        // Set tile active if data is enabled
                         launch {
                             qsTile.state = Tile.STATE_ACTIVE
                         }
-                        // Set tile heading
-                        launch {
-                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                                .getString("data_heading", "network_name") ?: "network_name"
-                            qsTile.label = getDataHeading(applicationContext, preference)
+                        // Update tile based on network state
+                        when (networkMetadata.state) {
+                            DataNetworkStates.CONNECTED -> {
+                                // Set tile heading
+                                launch {
+                                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                        .getString("data_heading", "network_name") ?: "network_name"
+                                    qsTile.label = getDataHeading(applicationContext, preference)
+                                }
+                                // Set tile subheading
+                                launch {
+                                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                        .getString("data_subheading", "network_type") ?: "state"
+                                    qsTile.subtitle = getDataHeading(applicationContext, preference)
+                                }
+                                // Set tile icon drawable
+                                launch {
+                                    val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                        .getString("data_icon_type", "signal_strength") ?: "signal_strength"
+                                    qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext, preference))
+                                }
+                            }
+                            DataNetworkStates.DISCONNECTED -> {
+                                launch {
+                                    qsTile.label = getString(R.string.network_data)
+                                    qsTile.subtitle = getString(R.string.state_disconnected)
+                                    qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.network_strength_off_outline)
+                                }
+                            }
+                            DataNetworkStates.LOST -> {
+                                launch {
+                                    qsTile.label = getString(R.string.network_data)
+                                    qsTile.subtitle = getString(R.string.state_lost)
+                                    qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_cellular_connected_no_internet_0_bar_24)
+                                }
+                            }
+                            DataNetworkStates.UNAVAILABLE -> {
+                                launch {
+                                    qsTile.label = getString(R.string.network_data)
+                                    qsTile.subtitle = getString(R.string.state_unavailable)
+                                    qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.ic_baseline_signal_cellular_connected_no_internet_0_bar_24)
+                                }
+                            }
                         }
-                        // Set tile subheading
-                        launch {
-                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                                .getString("data_subheading", "network_type") ?: "state"
-                            qsTile.subtitle = getDataHeading(applicationContext, preference)
-                        }
-                        // Set tile icon drawable
-                        launch {
-                            val preference = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                                .getString("data_icon_type", "signal_strength") ?: "signal_strength"
-                            qsTile.icon = Icon.createWithResource(applicationContext, getDataIcon(applicationContext, preference))
-                        }
+
                     }
                     else -> {
                         launch {
@@ -195,7 +222,7 @@ class DataTileService : TileService() {
                     2 -> R.drawable.network_strength_2
                     3 -> R.drawable.network_strength_3
                     4 -> R.drawable.network_strength_4
-                    else -> R.drawable.ic_baseline_question_mark_24
+                    else -> R.drawable.ic_baseline_signal_cellular_connected_no_internet_0_bar_24
                 }
             }
             "arrows" -> {
@@ -203,7 +230,7 @@ class DataTileService : TileService() {
                     DataNetworkStates.LOST,
                     DataNetworkStates.CONNECTED -> {
                         // TODO: Find a normal arrows "on" icon
-                        R.drawable.ic_baseline_question_mark_24
+                        R.drawable.arrows_vertical
                     }
                     DataNetworkStates.DISCONNECTED,
                     DataNetworkStates.UNAVAILABLE -> R.drawable.ic_baseline_mobiledata_off_24
