@@ -19,6 +19,8 @@
     <string name="error_not_set">Preference Not Set</string>
     <string name="error_unknown_interface">Unknown Interface</string>
     <string name="error_permission_denied">Missing Permission</string> <!-- Copied in DataGeneration enum -->
+    <string name="error_no_ipv4">(No IPv4 Address)</string>
+    <string name="error_no_ipv6">(No IPv6 Address)</string>
 
 
     
