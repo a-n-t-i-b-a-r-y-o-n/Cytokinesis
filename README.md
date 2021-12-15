@@ -60,8 +60,5 @@ However, if you must open an issue, please include information such as:
 
 ## Project TODO
 - Add translations
-- Finish finding/creating the required icons
-  - Normal "arrows"-type data icon when connected
-  - "IWLAN" ?
 - Find a way to fix occasional stuttering?
 - Consider developing a root alternative?

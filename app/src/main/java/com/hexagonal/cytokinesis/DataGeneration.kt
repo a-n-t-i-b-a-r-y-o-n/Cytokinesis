@@ -17,9 +17,9 @@ enum class DataGeneration(val icon: Int, val gen: String) {
     _4G(R.drawable.ic_baseline_4g_mobiledata_24, "4G"),
     _3G(R.drawable.ic_baseline_3g_mobiledata_24, "3G"),
     _2G(R.drawable.ic_baseline_e_mobiledata_24, "2G"),
-    _IWLAN(R.drawable.ic_baseline_question_mark_24, "IWLAN"),
+    _IWLAN(R.drawable.old_wifi_bars, "IWLAN"),
     _UNKNOWN(R.drawable.ic_baseline_question_mark_24, ". . ."),
-    _PERMISSION_DENIED(R.drawable.ic_baseline_question_mark_24, "<Missing Permission>")
+    _PERMISSION_DENIED(R.drawable.ic_baseline_signal_cellular_connected_no_internet_0_bar_24, "<Missing Permission>")
 }
 
 // Decide network "Generation" based on TelephonyDisplayInfo (More accurate)
